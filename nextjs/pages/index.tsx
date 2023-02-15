@@ -6,7 +6,7 @@ import { HttpRpcClient, SimpleAccountAPI } from "@aa-lib/sdk"
 import { USDToken__factory, USDToken } from "@aa-lib/contracts"
 import { Wallet, getDefaultProvider } from "ethers"
 import cx from "clsx"
-import { Formik, FormikConfig } from "formik"
+import { Field, Form, Formik, FormikHelpers } from "formik"
 
 import VortexButton from "@/components/VortexButton"
 import {
@@ -37,6 +37,17 @@ const parseExpectedGas = (e: Error): Error => {
 
 const { mnemonic, providerUrl, entryPoint, accountFactory, bundlerUrl, usdt } =
   LOCAL_CONFIG
+
+enum Currency {
+  ethers = "ethers",
+  usdt = "usdt",
+}
+
+type FormValues = {
+  addressOrName: string
+  amount: string
+  currency: Currency
+}
 
 export default function Home() {
   const [accountApi, setAccountApi] = useState<SimpleAccountAPI>()
@@ -139,10 +150,11 @@ export default function Home() {
     updateUserBalances(address)
   }
 
-  const handleTransfer: FormikConfig<{
-    addressOrName: string
-  }>["onSubmit"] = async ({ addressOrName }, { setSubmitting }) => {
-    if (!accountApi) {
+  const handleTransfer = async (
+    { addressOrName, amount, currency }: FormValues,
+    { setSubmitting }: FormikHelpers<FormValues>,
+  ) => {
+    if (!accountApi || !bundlerProvider || !amount) {
       return
     }
 
@@ -158,7 +170,30 @@ export default function Home() {
       throw new Error("Not a resolvable ens name")
     }
 
+    setSubmitting(true)
     // Construct transfer op and send it to bundler
+    const userOp = await accountApi.createSignedUserOp({
+      target: address,
+      data: "0x",
+      value: parseEther(amount),
+    })
+
+    try {
+      const userOpHash = await bundlerProvider.sendUserOpToBundler(userOp)
+      const txid = await accountApi.getUserOpReceipt(userOpHash)
+      console.log("reqId", userOpHash, "txid=", txid)
+      await updateUserBalances(address)
+    } catch (e: any) {
+      throw parseExpectedGas(e)
+    }
+
+    setSubmitting(false)
+  }
+
+  const initialFormValues: FormValues = {
+    addressOrName: "",
+    amount: '0',
+    currency: Currency.ethers,
   }
 
   return (
@@ -238,35 +273,11 @@ export default function Home() {
           </div>
 
           {!!etherBalance && parseEther(etherBalance).gt(0) && (
-            <Formik
-              initialValues={{ addressOrName: "" }}
-              validate={(values) => {
-                const errors = {} as typeof values
-                if (!values.addressOrName) {
-                  errors.addressOrName = "Address is required"
-                }
-
-                const notAddrOrEns =
-                  !isAddress(values.addressOrName) &&
-                  !isValidName(values.addressOrName)
-                const nameNotEndsWithEth =
-                  !isAddress(values.addressOrName) &&
-                  isValidName(values.addressOrName) &&
-                  !values.addressOrName.endsWith(".eth")
-                if (notAddrOrEns || nameNotEndsWithEth) {
-                  errors.addressOrName = "Invalid address or ens name"
-                }
-                return errors
-              }}
-              onSubmit={handleTransfer}
-            >
+            <Formik initialValues={initialFormValues} onSubmit={handleTransfer}>
               {({
                 values,
                 errors,
                 touched,
-                handleChange,
-                handleBlur,
-                handleSubmit,
                 isSubmitting,
                 isValid,
                 /* and other goodies */
@@ -277,7 +288,7 @@ export default function Home() {
                   >
                     Transfer
                   </h2>
-                  <form className="mt-2 pb-2" onSubmit={handleSubmit}>
+                  <Form className="mt-2 pb-2">
                     <div className="flex items-end">
                       <div className="flex flex-wrap items-center gap-2 w-full sm:max-w-4xl">
                         <label
@@ -287,13 +298,11 @@ export default function Home() {
                           Transfer to
                         </label>
                         <div className="relative">
-                          <input
+                          <Field
+                            as="input"
                             type="text"
                             name="addressOrName"
                             id="addressOrName"
-                            onBlur={handleBlur}
-                            onChange={handleChange}
-                            value={values.addressOrName}
                             className={cx(
                               "block rounded-md sm:text-sm w-auto",
                               errors.addressOrName
@@ -301,40 +310,64 @@ export default function Home() {
                                 : "border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500",
                             )}
                             placeholder="0x... or vitalik.eth"
+                            validate={(addressOrName: string) => {
+                              if (!addressOrName) {
+                                return "Address is required"
+                              }
+                              const notAddrOrEns =
+                                !isAddress(addressOrName) &&
+                                !isValidName(addressOrName)
+                              const nameNotEndsWithEth =
+                                !isAddress(addressOrName) &&
+                                isValidName(addressOrName) &&
+                                !addressOrName.endsWith(".eth")
+                              if (notAddrOrEns || nameNotEndsWithEth) {
+                                return "Invalid address or ens name"
+                              }
+                            }}
                           />
-                          <p className="absolute -bottom-12 text-sm text-red-600">
-                            {errors.addressOrName &&
-                              touched.addressOrName &&
-                              errors.addressOrName}
-                          </p>
+                          <div className="absolute top-11 left-1 text-sm text-red-600">
+                            <p>
+                              {errors.addressOrName &&
+                                touched.addressOrName &&
+                                errors.addressOrName}
+                            </p>
+                          </div>
                         </div>
 
                         <label
-                          htmlFor="price"
+                          htmlFor="amount"
                           className="text-base font-semibold text-slate-800"
                         >
                           with
                         </label>
                         <div className="relative rounded-md shadow-sm">
-                          <input
+                          <Field
+                            as="input"
                             type="text"
-                            name="price"
-                            id="price"
-                            className="block w-full rounded-md border-gray-300 pr-12 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            name="amount"
+                            id="amount"
+                            className={cx(
+                              "block rounded-md sm:text-sm w-auto",
+                              errors.amount
+                                ? "border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:outline-none focus:ring-red-500"
+                                : "border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500",
+                            )}
                             placeholder="0.00"
                           />
                           <div className="absolute inset-y-0 right-0 flex items-center">
                             <label htmlFor="currency" className="sr-only">
                               Currency
                             </label>
-                            <select
+                            <Field
                               id="currency"
                               name="currency"
+                              as="select"
                               className="h-full rounded-md border-transparent bg-transparent py-0 pl-2 pr-7 text-gray-500 sm:text-sm"
                             >
                               <option>Ethers</option>
                               <option>USDT</option>
-                            </select>
+                            </Field>
                           </div>
                         </div>
 
@@ -352,7 +385,7 @@ export default function Home() {
                         </button>
                       </div>
                     </div>
-                  </form>
+                  </Form>
                 </div>
               )}
             </Formik>
