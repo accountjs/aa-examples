@@ -1,14 +1,18 @@
 import { LOCAL_CONFIG } from "@/config"
 import Head from "next/head"
 import { Inter } from "@next/font/google"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { HttpRpcClient, SimpleAccountAPI } from "@aa-lib/sdk"
-import { USDToken__factory, USDToken } from "@aa-lib/contracts"
-import { Wallet, getDefaultProvider } from "ethers"
-import cx from "clsx"
-import { Field, Form, Formik, FormikHelpers } from "formik"
-
-import VortexButton from "@/components/VortexButton"
+import { useEffect, useMemo, useState } from "react"
+import {
+  HttpRpcClient,
+  SimpleAccountForTokensAPI,
+  TokenPaymasterAPI,
+} from "@aa-lib/sdk"
+import {
+  ERC20__factory,
+  TokenPaymaster__factory,
+  WETH__factory,
+} from "@aa-lib/contracts"
+import { Wallet, getDefaultProvider, BigNumber } from "ethers"
 import {
   formatEther,
   getAddress,
@@ -17,6 +21,14 @@ import {
   keccak256,
   parseEther,
 } from "ethers/lib/utils"
+import cx from "clsx"
+import { Field, Form, Formik, FormikHelpers } from "formik"
+import { useEvent } from "react-use-event-hook"
+
+import VortexButton from "@/components/VortexButton"
+
+import { useIsMounted } from "@/hooks/useIsMounted"
+import { provider, owner, paymaster } from "@/lib/instances"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -35,8 +47,14 @@ const parseExpectedGas = (e: Error): Error => {
   return e
 }
 
-const { mnemonic, providerUrl, entryPoint, accountFactory, bundlerUrl, usdt } =
-  LOCAL_CONFIG
+const {
+  entryPoint,
+  accountForTokenFactory,
+  bundlerUrl,
+  usdt,
+  weth,
+  wethPaymaster,
+} = LOCAL_CONFIG
 
 enum Currency {
   ethers = "ethers",
@@ -49,39 +67,71 @@ type FormValues = {
   currency: Currency
 }
 
+type Balance = {
+  value: BigNumber
+  formatted: string
+}
+
+type UserBalances = {
+  usdt?: Balance
+  weth?: Balance
+  ether?: Balance
+  // erc20: Balance
+}
+
+async function getBalanceOf(
+  of: string,
+  tokenAddress?: string,
+): Promise<Balance> {
+  const isEther = !tokenAddress
+  const balance = isEther
+    ? await provider.getBalance(of)
+    : await ERC20__factory.connect(tokenAddress, provider).balanceOf(of)
+  return {
+    value: balance,
+    formatted: formatEther(balance),
+  }
+}
+
 export default function Home() {
-  const [accountApi, setAccountApi] = useState<SimpleAccountAPI>()
+  const [accountApi, setAccountApi] = useState<SimpleAccountForTokensAPI>()
   const [hasDeployed, setHasDeployed] = useState(false)
   const [address, setAddress] = useState<string>()
-  const [USDTContract, setUSDTContract] = useState<USDToken>()
-  const [usdtBalance, setUsdtBalance] = useState<string>()
-  const [etherBalance, setEtherBalance] = useState<string>()
+  const [balances, setBalances] = useState<UserBalances>()
   const [bundlerProvider, setBundlerProvider] = useState<HttpRpcClient>()
+  const isMounted = useIsMounted()
 
-  const provider = useMemo(() => getDefaultProvider(providerUrl), [])
-  const owner = useMemo(
-    () => Wallet.fromMnemonic(mnemonic).connect(provider),
-    [provider],
-  )
-
-  // TODO: Remove set mutations
-  const updateUserBalances = useCallback(
-    async (address: string) => {
-      const contract = await USDToken__factory.connect(usdt, owner)
-      const bigBalance = await contract.balanceOf(address)
-      setUsdtBalance(formatEther(bigBalance))
-      const bigEtherBalance = await provider.getBalance(address)
-      setEtherBalance(formatEther(bigEtherBalance))
-    },
-    [owner, provider],
-  )
+  const updateCurrUserBalances = useEvent(async () => {
+    if (!address) {
+      return
+    }
+    const usdtBalance = await getBalanceOf(address, usdt)
+    const wethBalance = await getBalanceOf(address, weth)
+    const etherBalance = await getBalanceOf(address)
+    setBalances({
+      usdt: usdtBalance,
+      weth: wethBalance,
+      ether: etherBalance,
+    })
+  })
 
   useEffect(() => {
-    const newAccountApi = new SimpleAccountAPI({
+    ;(async () => {
+      const deposit = await paymaster.getDeposit()
+      console.log("🚀 ~ file: index.tsx:125 ~ ; ~ deposit", deposit.toString())
+    })()
+  }, [])
+
+  useEffect(() => {
+    const paymasterAPI = new TokenPaymasterAPI(wethPaymaster)
+    const newAccountApi = new SimpleAccountForTokensAPI({
       owner,
       provider,
+      paymasterAPI,
       entryPointAddress: entryPoint,
-      factoryAddress: accountFactory,
+      factoryAddress: accountForTokenFactory,
+      token: weth,
+      paymaster: wethPaymaster,
       // index
     })
     ;(async () => {
@@ -91,7 +141,7 @@ export default function Home() {
       setAddress(address)
       setHasDeployed(!isPhantom)
 
-      await updateUserBalances(address)
+      await updateCurrUserBalances()
 
       const { chainId } = await provider.getNetwork()
       const newBundlerProvider = new HttpRpcClient(
@@ -101,7 +151,7 @@ export default function Home() {
       )
       setBundlerProvider(newBundlerProvider)
     })()
-  }, [address, updateUserBalances, owner, provider])
+  }, [address, updateCurrUserBalances])
 
   const [isActivatingAccount, setIsActivatingAccount] = useState(false)
   // Activate account
@@ -128,30 +178,53 @@ export default function Home() {
     }
   }
 
-  const faucet = async () => {
-    if (!etherBalance || !address) {
-      return
+  const hasAnyBalances =
+    balances &&
+    Object.values(balances).some((balance) => !!balance && balance.value.gt(0))
+
+  const faucet = async (token?: "ether" | "weth" | "usdt" | "erc20") => {
+    if (!address || (balances && !Object.values(balances).some((x) => !!x))) {
+      throw new Error("There's no address or balances to faucet for")
     }
 
-    const ownerBalance = await owner.getBalance()
-    const accountBalance = parseEther(etherBalance)
+    const requiredBalances = balances as Required<UserBalances>
 
-    if (
-      accountBalance.gt(parseEther("1")) &&
-      ownerBalance.gt(parseEther("10000"))
-    ) {
-      throw "There is no need to faucet for"
+    switch (token) {
+      case "ether": {
+        const ownerBalance = await owner.getBalance()
+        if (
+          requiredBalances.ether.value.gt(parseEther("1")) &&
+          ownerBalance.gt(parseEther("10000"))
+        ) {
+          throw "There is no need to faucet for"
+        }
+        await owner.sendTransaction({
+          to: address,
+          value: parseEther("1").sub(requiredBalances.ether.value),
+          gasLimit: 1e6
+        })
+      }
+      case "weth": {
+        const ownerBalance = await getBalanceOf(address, weth)
+        if (
+          requiredBalances.weth.value.gt(parseEther("1")) &&
+          ownerBalance.value.gt(parseEther("10000"))
+        ) {
+          throw "There is no need to faucet for"
+        }
+        await WETH__factory.connect(weth, owner).transfer(
+          address,
+          parseEther("1").sub(requiredBalances.weth.value),
+        )
+      }
+      default: {
+        updateCurrUserBalances()
+      }
     }
-
-    await owner.sendTransaction({
-      to: address,
-      value: parseEther("1").sub(accountBalance),
-    })
-    updateUserBalances(address)
   }
 
   const handleTransfer = async (
-    { addressOrName, amount, currency }: FormValues,
+    { addressOrName, amount }: FormValues,
     { setSubmitting }: FormikHelpers<FormValues>,
   ) => {
     if (!accountApi || !bundlerProvider || !amount) {
@@ -182,7 +255,7 @@ export default function Home() {
       const userOpHash = await bundlerProvider.sendUserOpToBundler(userOp)
       const txid = await accountApi.getUserOpReceipt(userOpHash)
       console.log("reqId", userOpHash, "txid=", txid)
-      await updateUserBalances(address)
+      await updateCurrUserBalances()
     } catch (e: any) {
       throw parseExpectedGas(e)
     }
@@ -192,7 +265,7 @@ export default function Home() {
 
   const initialFormValues: FormValues = {
     addressOrName: "",
-    amount: '0',
+    amount: "0",
     currency: Currency.ethers,
   }
 
@@ -232,9 +305,10 @@ export default function Home() {
             <div className="capitalize">
               <strong>Account Address:</strong> {address}
             </div>
+            {/* Activation */}
             <div
               className={cx(
-                hasDeployed ? "hidden" : "flex opacity-100",
+                isMounted && !hasDeployed ? "flex opacity-100" : "hidden",
                 "none items-center gap-3 transition-all duration-300",
               )}
             >
@@ -255,24 +329,38 @@ export default function Home() {
             </h2>
             <div className="flex gap-4 items-center">
               <strong>ETH: </strong>
-              <span>{etherBalance}</span>
+              <span>{balances?.ether?.formatted}</span>
 
-              {!!etherBalance && parseEther(etherBalance).lt(1) && (
+              {!!balances?.ether &&
+                balances.ether.value.lt(parseEther("1")) && (
+                  <button
+                    className="capitalize inline-flex items-center rounded-md border border-transparent bg-pink-600 px-2 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
+                    onClick={() => faucet("ether")}
+                  >
+                    faucet
+                  </button>
+                )}
+            </div>
+            <div>
+              <strong>USDT: </strong>
+              <span>{balances?.usdt?.formatted}</span>
+            </div>
+            <div className="flex gap-4 items-center">
+              <strong>WETH: </strong>
+              <span>{balances?.weth?.formatted}</span>
+
+              {!!balances?.weth && balances.weth.value.lt(parseEther("1")) && (
                 <button
                   className="capitalize inline-flex items-center rounded-md border border-transparent bg-pink-600 px-2 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
-                  onClick={() => faucet()}
+                  onClick={() => faucet("weth")}
                 >
                   faucet
                 </button>
               )}
             </div>
-            <div>
-              <strong>USDT: </strong>
-              <span>{usdtBalance}</span>
-            </div>
           </div>
 
-          {!!etherBalance && parseEther(etherBalance).gt(0) && (
+          {hasAnyBalances && (
             <Formik initialValues={initialFormValues} onSubmit={handleTransfer}>
               {({
                 values,
