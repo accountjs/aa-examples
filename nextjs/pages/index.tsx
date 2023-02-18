@@ -7,11 +7,7 @@ import {
   SimpleAccountForTokensAPI,
   TokenPaymasterAPI,
 } from "@aa-lib/sdk"
-import {
-  ERC20__factory,
-  TokenPaymaster__factory,
-  WETH__factory,
-} from "@aa-lib/contracts"
+import { ERC20__factory, WETH__factory } from "@aa-lib/contracts"
 import { Wallet, getDefaultProvider, BigNumber } from "ethers"
 import {
   formatEther,
@@ -201,7 +197,6 @@ export default function Home() {
         await owner.sendTransaction({
           to: address,
           value: parseEther("1").sub(requiredBalances.ether.value),
-          gasLimit: 1e6
         })
       }
       case "weth": {
@@ -212,10 +207,12 @@ export default function Home() {
         ) {
           throw "There is no need to faucet for"
         }
-        await WETH__factory.connect(weth, owner).transfer(
-          address,
-          parseEther("1").sub(requiredBalances.weth.value),
-        )
+        const faucetAmount = parseEther("1").sub(requiredBalances.weth.value)
+        await owner.sendTransaction({
+          to: weth,
+          value: faucetAmount,
+        })
+        await WETH__factory.connect(weth, owner).transfer(address, faucetAmount)
       }
       default: {
         updateCurrUserBalances()
