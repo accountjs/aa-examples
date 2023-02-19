@@ -9,6 +9,7 @@ import { Balances, PaymasterMode } from "@/lib/type"
 import { useLocalStorage } from "./useLocalStorage"
 
 const generateNewOwner = () => Wallet.createRandom()
+// TODO: Consider use user encrypted json file
 const initialPrivateKey = generateNewOwner().privateKey
 
 export const useAccountAbstractionAccount = (
@@ -67,9 +68,11 @@ export const useAccountAbstractionAccount = (
     }
 
     ;(async () => {
+      const ownerWallet = new Wallet(privateKey)
+      console.log("🚀 ~ file: useAccountAbstractionAccount.ts:72 ~ ; ~ ownerWallet", await ownerWallet.getAddress())
       const aaProvider = await getAAProvider(
         paymasterMode,
-        new Wallet(privateKey),
+        ownerWallet,
       )
       const address = (await aaProvider.getSenderAccountAddress()) as Address
       const isPhantom = await aaProvider.smartAccountAPI.checkAccountPhantom()

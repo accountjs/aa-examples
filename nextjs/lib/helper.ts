@@ -125,8 +125,7 @@ export async function getAAProvider(
   }
 }
 
-export async function deposit(paymasterMode?: PaymasterMode, amount?: string) {
-  if (!paymasterMode || !amount) throw new Error("No pmMode or amount")
+export async function deposit(paymasterMode: PaymasterMode, amount = "1") {
   switch (paymasterMode) {
     case PaymasterMode.weth: {
       const paymaster = WETHPaymaster__factory.connect(wethPaymaster, admin)
@@ -151,8 +150,6 @@ export async function deposit(paymasterMode?: PaymasterMode, amount?: string) {
       await paymaster.deposit({ value: parseEther(amount) })
       break
     }
-    default:
-      throw new Error("Not implemented")
   }
 }
 
