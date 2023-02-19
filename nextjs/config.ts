@@ -24,7 +24,7 @@ export const GOERLI_CONFIG = {
   fixedPaymaster: '0x7500Aad545348099cbBf2F8B720701f41336008A',
   weth: '0xb63D63c12Db7af135165227a98aa13B008c92f8A',
   usdt: '0xC8cd2521A45B6133d134458CE43Def8587E309ea',
-  token: '0x9Fcfd091b0519775d572C59E37ead19870c49cdD',
+  tokenAddr: '0x9Fcfd091b0519775d572C59E37ead19870c49cdD',
   bundlerUrl: 'http://localhost:3000/rpc',
   providerUrl: 'http://localhost:8545',
 } as const
