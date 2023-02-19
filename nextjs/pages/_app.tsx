@@ -1,9 +1,8 @@
 import "@/styles/globals.css"
 import type { AppProps } from "next/app"
 import { WagmiConfig, createClient } from "wagmi"
-import { initPaymaster, provider } from "@/lib/instances"
+import { provider } from "@/lib/instances"
 
-initPaymaster()
 const client = createClient({
   autoConnect: true,
   provider,
