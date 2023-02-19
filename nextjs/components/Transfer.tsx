@@ -93,10 +93,10 @@ export const Transfer = ({
                       as="select"
                       className="h-full rounded-md border-transparent bg-transparent py-0 pl-2 pr-7 text-gray-500 sm:text-sm"
                     >
-                      <option>Ethers</option>
-                      <option>WETH</option>
-                      <option>USDT</option>
-                      <option>TOKEN</option>
+                      <option value={Currency.ether}>Ethers</option>
+                      <option value={Currency.weth}>WETH</option>
+                      <option value={Currency.usdt}>USDT</option>
+                      <option value={Currency.token}>TOKEN</option>
                     </Field>
                   </div>
                 </div>

@@ -1,6 +1,5 @@
 import React from "react"
 import { Address } from "wagmi"
-import { Inter } from "@next/font/google"
 import cx from "clsx"
 import { useAccountAbstractionAccount } from "@/hooks/useAccountAbstractionAccount"
 import { useIsMounted } from "@/hooks/useIsMounted"
