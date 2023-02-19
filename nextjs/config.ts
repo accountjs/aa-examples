@@ -9,7 +9,7 @@ export const LOCAL_CONFIG = {
   fixedPaymaster: '0x610178dA211FEF7D417bC0e6FeD39F05609AD788',
   weth: '0xfb970555c468b82cd55831d09bb4c7ee85188675',
   usdt: '0x0165878A594ca255338adfa4d48449f69242Eb8F',
-  token: '0xe5aa11a43e0b72cc2a2655b38070c1784201107a',
+  tokenAddr: '0xe5aa11a43e0b72cc2a2655b38070c1784201107a',
   bundlerUrl: 'http://localhost:3000/rpc',
   providerUrl: 'http://localhost:8545',
 } as const
