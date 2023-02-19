@@ -50,16 +50,20 @@ export const useAccountAbstractionAccount = (
       await updateCurrUserBalances()
       setHasDeployed(true)
     } catch (e) {
-      setIsActivatingAccount(false)
+      // We can get error from transaction
     }
+    setIsActivatingAccount(false)
   }
 
   const generateNewAccount = () => {
     setPrivateKey(generateNewOwner().privateKey)
   }
 
+  // Update balances on address changed
   useEffect(() => {
-    ;(async () => await updateCurrUserBalances())()
+    ;(async () => {
+      await updateCurrUserBalances()
+    })()
   }, [updateCurrUserBalances, address])
 
   useEffect(() => {
@@ -69,11 +73,7 @@ export const useAccountAbstractionAccount = (
 
     ;(async () => {
       const ownerWallet = new Wallet(privateKey)
-      console.log("🚀 ~ file: useAccountAbstractionAccount.ts:72 ~ ; ~ ownerWallet", await ownerWallet.getAddress())
-      const aaProvider = await getAAProvider(
-        paymasterMode,
-        ownerWallet,
-      )
+      const aaProvider = await getAAProvider(paymasterMode, ownerWallet)
       const address = (await aaProvider.getSenderAccountAddress()) as Address
       const isPhantom = await aaProvider.smartAccountAPI.checkAccountPhantom()
 
