@@ -19,11 +19,12 @@ export const UserAccount = ({ paymasterMode }: UserAccountProps) => {
   const isMounted = useIsMounted()
   const {
     balances,
-    updateCurrUserBalances,
     isActivatingAccount,
-    activateAccount,
     address,
     hasDeployed,
+    generateNewAccount,
+    activateAccount,
+    updateCurrUserBalances,
   } = useAccountAbstractionAccount(paymasterMode)
 
   const transfer = useTransfer()
@@ -60,8 +61,16 @@ export const UserAccount = ({ paymasterMode }: UserAccountProps) => {
         <div className="flex items-center gap-2">
           <strong>Deployed:</strong> {hasDeployed.toString()}
         </div>
-        <div className="capitalize">
-          <strong>Account Address:</strong> {address}
+        <div className="">
+          <div className="flex items-center gap-2">
+            <strong>Account Address:</strong> <p>{address}</p>{" "}
+          </div>
+          <button
+            onClick={generateNewAccount}
+            className="capitalize inline-flex items-center rounded-md border border-transparent bg-blue-600 px-2 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
+          >
+            New Account
+          </button>
         </div>
         {/* Activation */}
         <div
@@ -71,7 +80,7 @@ export const UserAccount = ({ paymasterMode }: UserAccountProps) => {
           )}
         >
           <strong className="capitalize text-orange-700">
-            activate account by take this pill &#8594;
+            activate this account by take this pill &#8594;
           </strong>
           <VortexButton
             rotate={isActivatingAccount}

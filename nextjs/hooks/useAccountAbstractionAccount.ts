@@ -1,17 +1,23 @@
 import { useEffect, useState } from "react"
+import { unstable_batchedUpdates } from "react-dom"
 import { Wallet } from "ethers"
-import { ERC4337EthersProvider } from "@aa-lib/sdk"
 import useEvent from "react-use-event-hook"
 import { Address } from "wagmi"
+import { ERC4337EthersProvider } from "@aa-lib/sdk"
 import { getAAProvider, getUserBalances } from "@/lib/helper"
 import { Balances, PaymasterMode } from "@/lib/type"
+import { useLocalStorage } from "./useLocalStorage"
 
-const aaOwner = Wallet.createRandom()
+const generateNewOwner = () => Wallet.createRandom()
+const initialPrivateKey = generateNewOwner().privateKey
 
 export const useAccountAbstractionAccount = (
   paymasterMode = PaymasterMode.none,
 ) => {
-  const [eoaSigner, setEoaSigner] = useState<Wallet>(aaOwner)
+  const [privateKey, setPrivateKey] = useLocalStorage<string>(
+    "__AA_LIB_PRIVATE_KEY_FOR_DEMO_ONLY",
+    initialPrivateKey,
+  )
   const [balances, setBalances] = useState<Balances>()
   const [address, setAddress] = useState<Address>()
   const [hasDeployed, setHasDeployed] = useState(false)
@@ -47,29 +53,43 @@ export const useAccountAbstractionAccount = (
     }
   }
 
+  const generateNewAccount = () => {
+    setPrivateKey(generateNewOwner().privateKey)
+  }
+
   useEffect(() => {
+    ;(async () => await updateCurrUserBalances())()
+  }, [updateCurrUserBalances, address])
+
+  useEffect(() => {
+    if (!privateKey) {
+      return
+    }
+
     ;(async () => {
-      const aaProvider = await getAAProvider(paymasterMode, eoaSigner)
-      setAAProvider(aaProvider)
-
+      const aaProvider = await getAAProvider(
+        paymasterMode,
+        new Wallet(privateKey),
+      )
       const address = (await aaProvider.getSenderAccountAddress()) as Address
-      setAddress(address)
-
       const isPhantom = await aaProvider.smartAccountAPI.checkAccountPhantom()
-      setHasDeployed(!isPhantom)
 
-      await updateCurrUserBalances()
+      unstable_batchedUpdates(async () => {
+        setAddress(address)
+        setAAProvider(aaProvider)
+        setHasDeployed(!isPhantom)
+      })
     })()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paymasterMode, eoaSigner])
+  }, [paymasterMode, privateKey, updateCurrUserBalances])
 
   return {
     address,
     balances,
     hasDeployed,
     isActivatingAccount,
-    eoaSigner,
     aaProvider,
+    // Methods
+    generateNewAccount,
     activateAccount,
     updateCurrUserBalances,
   }
