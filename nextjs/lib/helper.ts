@@ -241,10 +241,11 @@ export const faucet = async (address: Address, token?: Currency) => {
       const bal = await getBalanceOf(address, weth)
       if (bal.value.lt(requiredBalance)) {
         const requiredAmount = requiredBalance.sub(bal.value)
+        // wrap ETH to WETH
         await admin.sendTransaction({
           to: weth,
           value: requiredAmount,
-        }) // wrap ETH to WETH
+        })
         await WETH__factory.connect(weth, admin).transfer(
           address,
           requiredAmount,
@@ -287,7 +288,7 @@ export const transfer = async (
   currency: Currency,
   target: Address,
   amount: string,
-  aaProvider?: ERC4337EthersProvider,
+  aaProvider: ERC4337EthersProvider,
 ) => {
   if (!aaProvider) {
     throw new Error("Unable to do transfer because there is no signer!")
@@ -297,17 +298,19 @@ export const transfer = async (
     case Currency.ether: {
       await aaProvider.getSigner().sendTransaction({
         to: target,
-        data: "0x",
         value: parseEther(amount),
-        gasLimit: 100000,
       })
       break
     }
     case Currency.weth: {
-      await WETH__factory.connect(weth, aaProvider.getSigner()).transfer(
-        target,
-        parseEther(amount),
-      )
+      const signer = aaProvider.getSigner()
+      await signer.sendTransaction({
+        to: weth,
+        data: WETH__factory.createInterface().encodeFunctionData("transfer", [
+          target,
+          parseEther(amount),
+        ]),
+      })
       break
     }
     case Currency.usdt: {
@@ -318,10 +321,8 @@ export const transfer = async (
       break
     }
     case Currency.token: {
-      await ERC20__factory.connect(tokenAddr, aaProvider.getSigner()).transfer(
-        target,
-        parseEther(amount),
-      )
+      const token = ERC20__factory.connect(tokenAddr, aaProvider.getSigner())
+      await token.transfer(target, parseUnits(amount, await token.decimals()))
       break
     }
     default: {

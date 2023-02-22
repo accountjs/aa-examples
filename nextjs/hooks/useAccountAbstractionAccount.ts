@@ -4,7 +4,7 @@ import { Wallet } from "ethers"
 import useEvent from "react-use-event-hook"
 import { Address } from "wagmi"
 import { ERC4337EthersProvider } from "@aa-lib/sdk"
-import { getAAProvider, getUserBalances } from "@/lib/helper"
+import { getAAProvider, getUserBalances, parseExpectedGas } from "@/lib/helper"
 import { Balances, PaymasterMode } from "@/lib/type"
 import { useLocalStorage } from "./useLocalStorage"
 
@@ -35,21 +35,22 @@ export const useAccountAbstractionAccount = (
 
   // Activate account
   const activateAccount = async () => {
-    if (!address) {
+    if (!address || !aaProvider) {
       return
     }
 
     try {
       setIsActivatingAccount(true)
-      await aaProvider!.getSigner().sendTransaction({
+      await aaProvider.getSigner().sendTransaction({
         to: address,
-        data: "0x",
         value: 0,
         gasLimit: 100000,
       })
       await updateCurrUserBalances()
       setHasDeployed(true)
     } catch (e) {
+      const error = parseExpectedGas(e as Error)
+      console.log(error)
       // We can get error from transaction
     }
     setIsActivatingAccount(false)
@@ -73,13 +74,15 @@ export const useAccountAbstractionAccount = (
 
     ;(async () => {
       const ownerWallet = new Wallet(privateKey)
-      const aaProvider = await getAAProvider(paymasterMode, ownerWallet)
-      const address = (await aaProvider.getSenderAccountAddress()) as Address
-      const isPhantom = await aaProvider.smartAccountAPI.checkAccountPhantom()
+      const newAAProvider = await getAAProvider(paymasterMode, ownerWallet)
+      const newAddress =
+        (await newAAProvider.getSenderAccountAddress()) as Address
+      const isPhantom =
+        await newAAProvider.smartAccountAPI.checkAccountPhantom()
 
-      unstable_batchedUpdates(async () => {
-        setAddress(address)
-        setAAProvider(aaProvider)
+      unstable_batchedUpdates(() => {
+        setAddress(newAddress)
+        setAAProvider(newAAProvider)
         setHasDeployed(!isPhantom)
       })
     })()

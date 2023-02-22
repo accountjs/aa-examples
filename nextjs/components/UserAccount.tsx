@@ -25,9 +25,9 @@ export const UserAccount = ({ paymasterMode }: UserAccountProps) => {
     generateNewAccount,
     activateAccount,
     updateCurrUserBalances,
+    aaProvider,
   } = useAccountAbstractionAccount(paymasterMode)
-
-  const transfer = useTransfer()
+  const transfer = useTransfer(aaProvider)
   const handleTransfer: TransferProps["handleTransfer"] = async (
     { target, amount, currency },
     { setSubmitting },
