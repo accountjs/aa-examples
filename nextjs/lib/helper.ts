@@ -174,8 +174,6 @@ export async function getDeposit(paymasterMode: PaymasterMode) {
       )
       return paymaster.getDeposit()
     }
-    default:
-      throw new Error("Not implemented")
   }
 }
 
@@ -220,9 +218,6 @@ export const getUserBalances = async (address: Address) => {
 }
 
 export const faucet = async (address: Address, token?: Currency) => {
-  if (!address) {
-    throw new Error("There's no address or balances to faucet for")
-  }
   const requiredBalance = parseEther("1")
   switch (token) {
     case Currency.ether: {
@@ -284,16 +279,18 @@ export const faucet = async (address: Address, token?: Currency) => {
   }
 }
 
+const TOKEN_ADDRESS_MAP = {
+  [Currency.usdt]: usdt,
+  [Currency.weth]: weth,
+  [Currency.token]: tokenAddr,
+}
+
 export const transfer = async (
   currency: Currency,
   target: Address,
   amount: string,
   aaProvider: ERC4337EthersProvider,
 ) => {
-  if (!aaProvider) {
-    throw new Error("Unable to do transfer because there is no signer!")
-  }
-
   switch (currency) {
     case Currency.ether: {
       await aaProvider.getSigner().sendTransaction({
@@ -302,27 +299,17 @@ export const transfer = async (
       })
       break
     }
-    case Currency.weth: {
-      const signer = aaProvider.getSigner()
-      await signer.sendTransaction({
-        to: weth,
-        data: WETH__factory.createInterface().encodeFunctionData("transfer", [
+    case Currency.weth:
+    case Currency.usdt:
+    case Currency.token: {
+      const toAddress = TOKEN_ADDRESS_MAP[currency]
+      await aaProvider.getSigner().sendTransaction({
+        to: toAddress,
+        data: ERC20__factory.createInterface().encodeFunctionData("transfer", [
           target,
           parseEther(amount),
         ]),
       })
-      break
-    }
-    case Currency.usdt: {
-      await USDToken__factory.connect(usdt, aaProvider.getSigner()).transfer(
-        target,
-        parseUnits(amount, 8),
-      )
-      break
-    }
-    case Currency.token: {
-      const token = ERC20__factory.connect(tokenAddr, aaProvider.getSigner())
-      await token.transfer(target, parseUnits(amount, await token.decimals()))
       break
     }
     default: {

@@ -22,7 +22,7 @@ export enum Currency {
 }
 
 export enum PaymasterMode {
-  none,
+  none = "simple",
   weth = "weth",
   usdt = "usdt",
   token = "token",
