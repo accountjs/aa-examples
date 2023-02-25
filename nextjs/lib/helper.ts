@@ -6,6 +6,7 @@ import {
   ERC20__factory,
   USDToken__factory,
   WETH__factory,
+  EntryPoint__factory,
 } from "@aa-lib/contracts"
 import {
   ERC4337EthersProvider,
@@ -153,6 +154,23 @@ export async function deposit(paymasterMode: PaymasterMode, amount = "1") {
   }
 }
 
+const MODE_PAYMASTER_MAP = {
+  [PaymasterMode.usdt]: usdtPaymaster,
+  [PaymasterMode.weth]: wethPaymaster,
+  [PaymasterMode.gasless]: gaslessPaymaster,
+  [PaymasterMode.token]: fixedPaymaster,
+}
+
+export async function getDepositInfo(paymasterMode: PaymasterMode) {
+  // There is no paymaster for simple account mode
+  if (paymasterMode === PaymasterMode.none) {
+    return
+  }
+
+  const stakeManager = await EntryPoint__factory.connect(entryPoint, provider)
+  return stakeManager.getDepositInfo(MODE_PAYMASTER_MAP[paymasterMode])
+}
+
 export async function getDeposit(paymasterMode: PaymasterMode) {
   switch (paymasterMode) {
     case PaymasterMode.weth: {
@@ -293,6 +311,15 @@ export const transfer = async (
 ) => {
   switch (currency) {
     case Currency.ether: {
+      // const op = await aaProvider
+      //   .getSigner()
+      //   .smartAccountAPI.createSignedUserOp({
+      //     target,
+      //     data: "0x00",
+      //     value: parseEther(amount),
+      //   })
+      // const hash = await aaProvider.httpRpcClient.sendUserOpToBundler(op)
+      // console.log("🚀 ~ file: helper.ts:305 ~ hash:", hash)
       await aaProvider.getSigner().sendTransaction({
         to: target,
         value: parseEther(amount),
@@ -302,13 +329,16 @@ export const transfer = async (
     case Currency.weth:
     case Currency.usdt:
     case Currency.token: {
-      const toAddress = TOKEN_ADDRESS_MAP[currency]
+      const tokenAddress = TOKEN_ADDRESS_MAP[currency]
+      const tokenContract = ERC20__factory.connect(tokenAddress, aaProvider)
+      const decimals = await tokenContract.decimals()
+      const data = ERC20__factory.createInterface().encodeFunctionData(
+        "transfer",
+        [target, parseUnits(amount, decimals)],
+      )
       await aaProvider.getSigner().sendTransaction({
-        to: toAddress,
-        data: ERC20__factory.createInterface().encodeFunctionData("transfer", [
-          target,
-          parseEther(amount),
-        ]),
+        data,
+        to: tokenAddress,
       })
       break
     }

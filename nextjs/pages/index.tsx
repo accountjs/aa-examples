@@ -2,10 +2,11 @@ import Head from "next/head"
 import { useState } from "react"
 import cx from "clsx"
 
+import { inter } from "@/lib/css"
 import { PaymasterMode } from "@/lib/type"
 import { UserAccount } from "@/components/UserAccount"
 import { PaymasterSetting } from "@/components/PaymasterSetting"
-import { inter } from "@/lib/css"
+import { PaymasterInfo } from "@/components/PaymasterInfo"
 
 export default function Home() {
   const [paymasterMode, setPaymasterMode] = useState<PaymasterMode>(
@@ -37,6 +38,7 @@ export default function Home() {
             paymasterMode={paymasterMode}
             handlePaymasterChange={(p) => setPaymasterMode(p)}
           />
+          <PaymasterInfo />
         </div>
       </main>
     </>
