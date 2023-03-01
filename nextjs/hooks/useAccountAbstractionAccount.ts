@@ -24,6 +24,7 @@ export const useAccountAbstractionAccount = (
   const [hasDeployed, setHasDeployed] = useState(false)
   const [isActivatingAccount, setIsActivatingAccount] = useState(false)
   const [aaProvider, setAAProvider] = useState<ERC4337EthersProvider>()
+  const [eoaAddress, setEoaAddress] = useState<Address>()
 
   const updateCurrUserBalances = useEvent(async () => {
     if (!address) {
@@ -41,11 +42,12 @@ export const useAccountAbstractionAccount = (
 
     try {
       setIsActivatingAccount(true)
-      await aaProvider.getSigner().sendTransaction({
+      const tx = await aaProvider.getSigner().sendTransaction({
         to: address,
         value: 0,
         gasLimit: 100000,
       })
+      await tx.wait()
       await updateCurrUserBalances()
       setHasDeployed(true)
     } catch (e) {
@@ -60,10 +62,41 @@ export const useAccountAbstractionAccount = (
     setPrivateKey(generateNewOwner().privateKey)
   }
 
+  // const getUserAddress = useEvent(async () => {
+  //   if (!privateKey) {
+  //     return
+  //   }
+  //   const factoryInterface =
+  //     SimpleAccountForTokensFactory__factory.createInterface()
+  //   const owner = new Wallet(privateKey)
+  //   const initCode = hexConcat([
+  //     accountForTokenFactory,
+  //     factoryInterface.encodeFunctionData("createAccount", [
+  //       await owner.getAddress(),
+  //       weth,
+  //       wethPaymaster,
+  //       0,
+  //     ]),
+  //   ])
+
+  //   try {
+  //     await EntryPoint__factory.connect(
+  //       entryPoint,
+  //       provider,
+  //     ).callStatic.getSenderAddress(initCode)
+  //   } catch (e) {
+  //     const error = e as { errorArgs?: { sender?: Address } } | undefined
+  //     if (error?.errorArgs?.sender) {
+  //       return error?.errorArgs?.sender
+  //     }
+  //   }
+  // })
+
   // Update balances on address changed
   useEffect(() => {
     ;(async () => {
       await updateCurrUserBalances()
+      // console.log(await getUserAddress())
     })()
   }, [updateCurrUserBalances, address])
 
@@ -81,6 +114,7 @@ export const useAccountAbstractionAccount = (
         await newAAProvider.smartAccountAPI.checkAccountPhantom()
 
       unstable_batchedUpdates(() => {
+        setEoaAddress(ownerWallet.address as Address)
         setAddress(newAddress)
         setAAProvider(newAAProvider)
         setHasDeployed(!isPhantom)
@@ -89,6 +123,7 @@ export const useAccountAbstractionAccount = (
   }, [paymasterMode, privateKey, updateCurrUserBalances])
 
   return {
+    eoaAddress,
     address,
     balances,
     hasDeployed,

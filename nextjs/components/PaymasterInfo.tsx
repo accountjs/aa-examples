@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { BigNumber } from "ethers"
 import { PaymasterMode } from "@/lib/type"
-import { getDeposit, getDepositInfo } from "@/lib/helper"
+import { getDepositInfo } from "@/lib/helper"
 import { formatEther } from "ethers/lib/utils.js"
 
 type Deposit = {
@@ -60,7 +60,10 @@ const Info = ({ info }: InfoProps) => {
   return (
     <div>
       <h2>{info.name}</h2>
-      Deposit Amount: {formatEther(info.deposit)} ethers
+
+      <div className="flex items-center gap-2">
+        <strong>Deposit Amount:</strong> {formatEther(info.deposit)} ethers
+      </div>
     </div>
   )
 }

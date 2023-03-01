@@ -20,6 +20,7 @@ export const UserAccount = ({ paymasterMode }: UserAccountProps) => {
   const {
     balances,
     isActivatingAccount,
+    eoaAddress,
     address,
     hasDeployed,
     generateNewAccount,
@@ -59,19 +60,20 @@ export const UserAccount = ({ paymasterMode }: UserAccountProps) => {
         </h2>
 
         <div className="flex items-center gap-2">
+          <strong>Eoa Address:</strong> <p>{eoaAddress}</p>{" "}
+        </div>
+        <div className="flex items-center gap-2">
+          <strong>Account Address:</strong> <p>{address}</p>{" "}
+        </div>
+        <div className="flex items-center gap-2">
           <strong>Deployed:</strong> {hasDeployed.toString()}
         </div>
-        <div className="">
-          <div className="flex items-center gap-2">
-            <strong>Account Address:</strong> <p>{address}</p>{" "}
-          </div>
-          <button
-            onClick={generateNewAccount}
-            className="capitalize inline-flex items-center rounded-md border border-transparent bg-blue-600 px-2 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
-          >
-            New Account
-          </button>
-        </div>
+        <button
+          onClick={generateNewAccount}
+          className="capitalize inline-flex items-center rounded-md border border-transparent bg-blue-600 px-2 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
+        >
+          New Account
+        </button>
         {/* Activation */}
         <div
           className={cx(
