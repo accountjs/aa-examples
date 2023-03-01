@@ -16,9 +16,9 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>AA Lib Demo</title>
-        <meta name="description" content="aa lib example" />
-        <meta property="og:title" content="AA lib example" key="title" />
+        <title>account.js Demo</title>
+        <meta name="description" content="account.js example" />
+        <meta property="og:title" content="account.js example" key="title" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -30,7 +30,7 @@ export default function Home() {
               inter.className,
             )}
           >
-            AA Lib demo
+            account.js demo
           </h1>
 
           <UserAccount paymasterMode={paymasterMode} />

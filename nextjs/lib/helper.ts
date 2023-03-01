@@ -280,15 +280,10 @@ export const faucet = async (address: Address, token?: Currency) => {
       break
     }
     case Currency.token: {
-      const requiredTok = parseEther("3000")
-      const bal = await getBalanceOf(address, tokenAddr)
-      if (bal.value.lt(requiredTok)) {
-        const ERC20Token = ERC20__factory.connect(tokenAddr, admin)
-        await ERC20Token.mint(parseEther("100000"))
-        await ERC20Token.transfer(address, requiredTok.sub(bal.value))
-      } else {
-        console.log("not funding account. balance is enough")
-      }
+      const requiredTok = parseEther("1")
+      const ERC20Token = ERC20__factory.connect(tokenAddr, admin)
+      await ERC20Token.mint(parseEther("1"))
+      await ERC20Token.transfer(address, requiredTok)
       break
     }
     default: {
