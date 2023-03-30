@@ -1,11 +1,11 @@
 import React, { PropsWithChildren } from "react"
 
-import { Page } from "@geist-ui/core"
+import { Page, Text } from "@geist-ui/core"
 import SwipeableViews from "react-swipeable-views"
 import { Tabs, Tab, Box, Typography } from "@mui/material"
-import PhoneIcon from "@mui/icons-material/Phone"
-import FavoriteIcon from "@mui/icons-material/Favorite"
 import PersonPinIcon from "@mui/icons-material/PersonPin"
+import HomeIcon from "@mui/icons-material/Home"
+import SwapVerticalCircleIcon from "@mui/icons-material/SwapVerticalCircle"
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -45,40 +45,44 @@ const AppLayout = ({ children }: PropsWithChildren) => {
     setValue(index)
   }
 
+  // TODO: Use linked meue instead
   return (
     <Page dotBackdrop width="800px" height="100vh" padding={0}>
-      <Page.Header>
-        <h2>Header</h2>
+      <Page.Header pt={0}>
+        <Text h2 px={2}>
+          AA Wallet with AccountJS
+        </Text>
       </Page.Header>
 
-      <Page.Content padding={0}>
-        <SwipeableViews
-          axis="x"
-          index={value}
-          onChangeIndex={handleChangeIndex}
-          className="h-[calc(100vh-50px-58px)]"
-        >
-          <TabPanel value={value} index={0}>
-            Home
-          </TabPanel>
-          <TabPanel value={value} index={1}>
-            Dapp
-          </TabPanel>
-          <TabPanel value={value} index={2}>
-            Guard
-          </TabPanel>
-        </SwipeableViews>
+      <SwipeableViews
+        axis="x"
+        index={value}
+        onChangeIndex={handleChangeIndex}
+        className="!h-[calc(100vh-50px-58px-108px)]"
+      >
+        <TabPanel value={value} index={0}>
+          Home
+        </TabPanel>
+        <TabPanel value={value} index={1}>
+          Dapp
+        </TabPanel>
+        <TabPanel value={value} index={2}>
+          Guard
+        </TabPanel>
+      </SwipeableViews>
+
+      <Page.Footer>
         <Tabs
           value={value}
           onChange={handleChange}
           variant="fullWidth"
           aria-label="icon tabs example"
         >
-          <Tab icon={<PhoneIcon />} {...a11yProps(0)} />
-          <Tab icon={<FavoriteIcon />} {...a11yProps(1)} />
+          <Tab icon={<HomeIcon />} {...a11yProps(0)} />
+          <Tab icon={<SwapVerticalCircleIcon />} {...a11yProps(1)} />
           <Tab icon={<PersonPinIcon />} {...a11yProps(2)} />
         </Tabs>
-      </Page.Content>
+      </Page.Footer>
     </Page>
   )
 }
