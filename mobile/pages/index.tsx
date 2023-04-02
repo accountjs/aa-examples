@@ -1,14 +1,6 @@
 import Head from "next/head"
-import {
-  Page,
-  Text,
-  Image,
-  Display,
-  Button,
-  Grid,
-  Spacer,
-} from "@geist-ui/core"
 import Link from "next/link"
+import { Page, Text, Image, Display, Button, Grid } from "@geist-ui/core"
 
 export default function Home() {
   return (
