@@ -6,7 +6,7 @@ const App = () => {
   return (
     <>
       <Head>
-        <title>AA Wallet with AccountJS - create</title>
+        <title>AA Wallet with AccountJS</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
     </>

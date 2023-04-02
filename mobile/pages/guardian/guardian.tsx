@@ -5,29 +5,21 @@ import {
   Page,
   Text
 } from "@geist-ui/core"
-import { ArrowLeft } from "@geist-ui/icons"
 import Head from "next/head"
 import Link from "next/link"
 
-const Recover = () => {
+const Guardian = () => {
   return (
     <>
       <Head>
-        <title>Recover Account</title>
+        <title>Guardian</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Page dotBackdrop width="800px" padding={0}>
         <Page.Header pt={1} pl={2}>
-        <Grid.Container gap={2}>
-            <Grid xs={2} justify="flex-start" height="50px" pt={1}>
-              <Link href="/">
-                <ArrowLeft />
-              </Link>
-            </Grid>
-            <Grid xs={4} justify="flex-start">
-              <Text h3> InitPage </Text>
-            </Grid>
-          </Grid.Container>
+          <Text h2>
+            Guardian
+          </Text>
         </Page.Header>
 
         <Page.Content px={2} >
@@ -41,7 +33,7 @@ const Recover = () => {
           
           <Grid xs={24} justify="center">
             <Link href="/new_owner" className="w-full">
-              <Button shadow type="secondary-light" w="100%"> Start Recover </Button>
+              <Button shadow type="secondary-light" w="100%"> InitGuardian </Button>
             </Link>
           </Grid>
           </Grid.Container>
@@ -52,4 +44,4 @@ const Recover = () => {
   )
 }
 
-export default Recover
+export default Guardian
