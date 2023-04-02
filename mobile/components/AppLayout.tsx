@@ -1,89 +1,42 @@
 import React, { PropsWithChildren } from "react"
+import { useRouter } from "next/router"
 
-import { Page, Text } from "@geist-ui/core"
-import SwipeableViews from "react-swipeable-views"
-import { Tabs, Tab, Box, Typography } from "@mui/material"
+import { Page } from "@geist-ui/core"
+import { Tabs, Tab } from "@mui/material"
 import PersonPinIcon from "@mui/icons-material/PersonPin"
 import HomeIcon from "@mui/icons-material/Home"
 import SwapVerticalCircleIcon from "@mui/icons-material/SwapVerticalCircle"
 
-interface TabPanelProps {
-  children?: React.ReactNode
-  dir?: string
-  index: number
-  value: number
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`full-width-tabpanel-${index}`}
-      aria-labelledby={`full-width-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
-    </div>
-  )
-}
+type AppLink = "home" | "dapp" | "guardian"
 
 const AppLayout = ({ children }: PropsWithChildren) => {
-  const [value, setValue] = React.useState(0)
+  const router = useRouter()
+  const activateRoute = router.asPath?.replace(/\//g, "") ?? "home"
 
-  const handleChange = (_: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue)
+  const handleChange = (_: React.SyntheticEvent, newValue: AppLink) => {
+    router.push(`/${newValue}`)
   }
 
-  const handleChangeIndex = (index: number) => {
-    setValue(index)
-  }
-
-  // TODO: Use linked meue instead
   return (
-    <Page dotBackdrop width="800px" height="100vh" padding={0}>
-      <Page.Header pt={0}>
-        <Text h2 px={2}>
-          AA Wallet with AccountJS
-        </Text>
-      </Page.Header>
-
-      <SwipeableViews
-        axis="x"
-        index={value}
-        onChangeIndex={handleChangeIndex}
-        className="!h-[calc(100vh-50px-58px-108px)]"
-      >
-        <TabPanel value={value} index={0}>
-          Home
-        </TabPanel>
-        <TabPanel value={value} index={1}>
-          Dapp
-        </TabPanel>
-        <TabPanel value={value} index={2}>
-          Guard
-        </TabPanel>
-      </SwipeableViews>
-
+    <>
+      {children}
       <Page.Footer>
         <Tabs
-          value={value}
+          value={activateRoute}
           onChange={handleChange}
           variant="fullWidth"
           aria-label="icon tabs example"
         >
-          <Tab icon={<HomeIcon />} {...a11yProps(0)} />
-          <Tab icon={<SwapVerticalCircleIcon />} {...a11yProps(1)} />
-          <Tab icon={<PersonPinIcon />} {...a11yProps(2)} />
+          <Tab value="home" icon={<HomeIcon />} {...a11yProps(0)} />
+          <Tab
+            value="dapp"
+            icon={<SwapVerticalCircleIcon />}
+            {...a11yProps(1)}
+          />
+          <Tab value="guardian" icon={<PersonPinIcon />} {...a11yProps(2)} />
         </Tabs>
       </Page.Footer>
-    </Page>
+    </>
   )
 }
 
