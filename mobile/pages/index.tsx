@@ -36,22 +36,16 @@ export default function Home() {
           />
         </Display>
         <Grid.Container justify="center" gap={2} mt="100px">
-          <Grid xs={20} sm={7} justify="center">
-            <Link href="/create" className="w-full">
-              <Button shadow type="secondary-light" w="100%">
-                Create
-              </Button>
-              <Spacer inline w={0.35} />
+          <Grid xs={20} sm={20} justify="center">
+            <Link href="/recover" className="w-full">
+              <Button w="100%">Recover</Button>
             </Link>
           </Grid>
-          <Grid xs={20} sm={7} justify="center">
-            <Button width="100%">Recover</Button>
-          </Grid>
 
-          <Grid xs={20} sm={20}>
-            <Link href="/app" className="w-full">
+          <Grid xs={20} sm={20} justify="center">
+            <Link href="/home" className="w-full">
               <Button shadow type="secondary-light" w="100%">
-                Enter
+                Create
               </Button>
             </Link>
           </Grid>
