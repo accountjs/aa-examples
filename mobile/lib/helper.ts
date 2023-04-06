@@ -1,0 +1,97 @@
+import {
+  EntryPoint__factory,
+} from "@account-abstraction/contracts"
+import {
+  ClientConfig,
+  ERC4337EthersProvider,
+  HttpRpcClient,
+  SimpleAccountAPI,
+} from "@account-abstraction/sdk"
+
+import { LOCAL_CONFIG } from "@/config"
+import { PaymasterMode } from "./type"
+import { getDefaultProvider, Signer } from "ethers"
+import { JsonRpcProvider } from '@ethersproject/providers'
+import {
+  formatEther,
+  formatUnits,
+  parseEther,
+  parseUnits,
+} from "ethers/lib/utils.js"
+import { provider, admin } from "./instance"
+
+const {
+    providerUrl,
+    bundlerUrl,
+    entryPoint,
+    accountFactory,
+    accountForTokenFactory,
+    usdt,
+    weth,
+    tokenAddr,
+    wethPaymaster,
+    usdtPaymaster,
+    fixedPaymaster,
+    gaslessPaymaster,
+  } = LOCAL_CONFIG
+
+async function wrapProvider(provider: JsonRpcProvider, config: ClientConfig, owner: Signer) {
+    const chainId = await provider.getNetwork().then(net => net.chainId)
+    console.log("chainId", chainId)
+    const httpRpcClient = new HttpRpcClient(config.bundlerUrl, config.entryPointAddress, chainId)
+    const entryPointContract = EntryPoint__factory.connect(config.entryPointAddress, provider)
+    const smartAccountAPI = new SimpleAccountAPI({
+      provider,
+      entryPointAddress: config.entryPointAddress,
+      owner,
+      factoryAddress: accountFactory,
+    })
+    
+    return new ERC4337EthersProvider(
+      chainId,
+      config,
+      owner,
+      provider,
+      httpRpcClient,
+      entryPointContract,
+      smartAccountAPI
+    ).init()
+  }
+
+export async function getAAProvider(
+    owner: Signer,
+    paymasterMode: PaymasterMode = PaymasterMode.none,
+    account?: string,
+  ): Promise<ERC4337EthersProvider> {
+    switch (paymasterMode) {
+      case PaymasterMode.none:
+        const config = {
+          entryPointAddress: entryPoint,
+          bundlerUrl: bundlerUrl,
+        }
+        return wrapProvider(provider, config, owner)
+      default:
+        throw new Error("Not implemented")
+    }
+  }
+
+export async function testETHFaucet(account: string, amount = "1") {
+  await admin.sendTransaction({
+    to: account,
+    value: parseEther(amount)
+  })
+}
+
+  // export async function depositAll(amount = "1") {
+  //   const WethPaymaster = WETHPaymaster__factory.connect(wethPaymaster, admin)
+  //   await WethPaymaster.deposit({ value: parseEther(amount) })
+  //   const UsdPaymaster = USDPaymaster__factory.connect(usdtPaymaster, admin)
+  //   await UsdPaymaster.deposit({ value: parseEther(amount) })
+  //   const TokenPaymaster = FixedPaymaster__factory.connect(fixedPaymaster, admin)
+  //   await TokenPaymaster.deposit({ value: parseEther(amount) })
+  //   const GaslessPaymaster = VerifyingPaymaster__factory.connect(
+  //     gaslessPaymaster,
+  //     admin,
+  //   )
+  //   await GaslessPaymaster.deposit({ value: parseEther(amount) })
+  // }
