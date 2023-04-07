@@ -6,11 +6,11 @@ import {
   ERC4337EthersProvider,
   HttpRpcClient,
   SimpleAccountAPI,
-} from "@account-abstraction/sdk"
+} from "@accountjs/sdk"
 
 import { LOCAL_CONFIG } from "@/config"
 import { PaymasterMode } from "./type"
-import { getDefaultProvider, Signer } from "ethers"
+import { Signer } from "ethers"
 import { JsonRpcProvider } from '@ethersproject/providers'
 import {
   parseEther,

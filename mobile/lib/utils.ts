@@ -5,7 +5,7 @@ import { provider, admin } from "./instance"
 import {
   Token__factory,
 } from "@accountjs/contracts"
-import { ERC4337EthersProvider } from "@account-abstraction/sdk"
+import { ERC4337EthersProvider } from "@accountjs/sdk"
 
 export async function balanceOf(
   of: Address,
