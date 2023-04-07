@@ -1,7 +1,15 @@
 import { useAbstractAccount } from "@/hooks/useAbstractAccount"
 import { useIsMounted } from "@/hooks/useIsMounted"
 import { Currency } from "@/lib/type"
-import { Page, Grid, Button, Text, Avatar, Collapse } from "@geist-ui/core"
+import {
+  Page,
+  Grid,
+  Button,
+  Text,
+  Avatar,
+  Collapse,
+  useToasts,
+} from "@geist-ui/core"
 import { Settings, Copy } from "@geist-ui/icons"
 import Link from "next/link"
 import { Address } from "wagmi"
@@ -27,11 +35,13 @@ const Home = () => {
 
   const copy = useCopyToClipboard()
   const [active, setActive] = useState(false)
+  const { setToast } = useToasts()
   const handleCopyAddress = () => {
     if (!accountAddress) {
       return
     }
     copy(accountAddress)
+    setToast({ text: "Address copied!", type: "success" })
     setActive(true)
     setTimeout(() => setActive(false), 2000)
   }
