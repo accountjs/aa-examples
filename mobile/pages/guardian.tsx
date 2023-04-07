@@ -1,9 +1,11 @@
-import { Button, Grid, Input, Page, Text } from "@geist-ui/core"
+import { Button, Grid, Page, Text } from "@geist-ui/core"
 import Head from "next/head"
 import Link from "next/link"
 import AppLayout from "../components/AppLayout"
 
 const Guardian = () => {
+  const initGuaridans = () => {}
+
   return (
     <AppLayout>
       <Head>
@@ -17,18 +19,15 @@ const Guardian = () => {
 
         <Page.Content px={2}>
           <Grid.Container gap={2}>
-            {/* <Grid xs={6} justify="flex-end" height="50px">
-              <Text h4>Account</Text>
-            </Grid>
-            <Grid xs={18} justify="flex-start" height="50px">
-              <Input width="100%" placeholder="account address" />
-            </Grid> */}
-
             <Grid xs={24} justify="center">
               <Link href="/new_owner" className="w-full">
-                <Button shadow type="secondary-light" w="100%">
-                  {" "}
-                  InitGuardian{" "}
+                <Button
+                  shadow
+                  type="secondary-light"
+                  w="100%"
+                  onClick={initGuaridans}
+                >
+                  Init your Guardians
                 </Button>
               </Link>
             </Grid>
