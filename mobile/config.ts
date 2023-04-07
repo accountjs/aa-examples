@@ -6,10 +6,10 @@ export const LOCAL_CONFIG = {
   gaslessPaymaster: '0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6',
   wethPaymaster: '0x5FC8d32690cc91D4c39d9d3abcBD16989F875707',
   usdtPaymaster: '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853',
-  fixedPaymaster: '0x610178dA211FEF7D417bC0e6FeD39F05609AD788',
-  weth: '0xd348692d37b02e9a63fa1cbd7832adc944d6ddd5',
+  fixedPaymaster: '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e',
+  weth: '0xfb970555c468b82cd55831d09bb4c7ee85188675',
   usdt: '0x0165878A594ca255338adfa4d48449f69242Eb8F',
-  tokenAddr: '0x0f7a41bc01b661847d07077168c439abff37db8d',
+  tokenAddr: '0x85d3ad7c7648d14ac4a6bfbfb10c4dfac2e63b5f',
   bundlerUrl: 'http://localhost:3000/rpc',
   providerUrl: 'http://localhost:8545',
 } as const

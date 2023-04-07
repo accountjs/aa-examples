@@ -1,7 +1,7 @@
 import Head from "next/head"
 import Link from "next/link"
 import { Page, Text, Image, Display, Button, Grid } from "@geist-ui/core"
-import { useEffect } from "react"
+import { useMemo } from "react"
 import { useAbstractAccount } from "../hooks/useAbstractAccount"
 import { useRouter } from "next/router"
 
@@ -9,7 +9,7 @@ export default function Home() {
   const { hasPrvKey } = useAbstractAccount()
   const router = useRouter()
   
-  useEffect (() => {
+  useMemo (() => {
     if (hasPrvKey) {
       router.push('/home')
     } 

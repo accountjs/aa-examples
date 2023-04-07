@@ -7,6 +7,8 @@ import { useAbstractAccount } from "../hooks/useAbstractAccount"
 import { useEffect } from "react"
 import { Address } from "wagmi"
 import { useRouter } from "next/router"
+import { AssetItem } from "@/components/AssetItem"
+import { Currency } from "@/lib/type"
 
 // trim address as 0x1234...5678
 const trimAddress = (address?: string | Address) => {
@@ -17,6 +19,7 @@ const trimAddress = (address?: string | Address) => {
 const Home = () => {
   
   const {
+    balances,
     hasPrvKey,
     aaProvider,
     eoaAddress,
@@ -73,7 +76,7 @@ const Home = () => {
               </Text>
               <Copy />
             </Grid>
-
+            
             <Grid xs={24} justify="center" height="80px">
               <Button shadow type="secondary-light" w="80%">
                 Activate Account
@@ -81,27 +84,10 @@ const Home = () => {
             </Grid>
           </Grid.Container>
           <Divider>ASSETS</Divider>
-          <Grid.Container gap={2}>
-            <Grid xs={24} justify="space-around" height="50px">
-              <Text h4>ETH</Text>
-              <Text h4>3</Text>
-            </Grid>
-          </Grid.Container>
-          <Divider />
-          <Grid.Container gap={2}>
-            <Grid xs={24} justify="space-around" height="50px">
-              <Text h4>USDT</Text>
-              <Text h4>100</Text>
-            </Grid>
-          </Grid.Container>
-          <Divider />
-          <Grid.Container>
-            <Grid xs={24} justify="center" height="80px">
-              <Tag type="error" invert>
-                More
-              </Tag>
-            </Grid>
-          </Grid.Container>
+          <AssetItem currency={Currency.ether} amount={balances.ether?.formatted} />
+          <AssetItem currency={Currency.weth} amount={balances.weth?.formatted} />
+          <AssetItem currency={Currency.usdt} amount={balances.usdt?.formatted} />
+          <AssetItem currency={Currency.token} amount={balances.token?.formatted} />
         </Page.Content>
       </Page>
     </AppLayout>

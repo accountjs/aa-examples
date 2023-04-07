@@ -1,5 +1,6 @@
 import { useAbstractAccount } from "@/hooks/useAbstractAccount"
 import { testFaucet } from "@/lib/helper"
+import { Currency } from "@/lib/type"
 import {
   Button,
   Select,
@@ -12,25 +13,20 @@ import { ArrowLeft } from "@geist-ui/icons"
 import Head from "next/head"
 import Link from "next/link"
 
-const Setting = () => {
+type TransferProps = {
+  currency?: Currency
+  amount?: string
+}
+
+const Transfer = () => {
   const {
     accAddress,
-    removePrvKey,
   } = useAbstractAccount()
 
   const onClickFaucet = async () => {
     console.log("faucet", accAddress)
     if (!accAddress) return
     await testFaucet(accAddress)
-  }
-
-  const onClickExit = async () => {
-    console.log("Exit", accAddress)
-    removePrvKey()
-  }
-
-  const onClickSave = async () => {
-    console.log("Save", accAddress)
   }
 
   return (
@@ -48,7 +44,7 @@ const Setting = () => {
               </Link>
             </Grid>
             <Grid xs={4} justify="flex-start">
-              <Text h3> Setting </Text>
+              <Text h3> Transfer </Text>
             </Grid>
           </Grid.Container>
         </Page.Header>
@@ -63,15 +59,7 @@ const Setting = () => {
                 <Select.Option value="1">Localnet</Select.Option>
                 <Select.Option value="2">Gorlinet</Select.Option>
               </Select>
-            </Grid> 
-            
-            <Grid xs={8} justify="flex-end" height="50px">
-              <Text h4>Bundler</Text>
-            </Grid>
-            <Grid xs={16} justify="flex-start" height="50px">
-              <Input width="100%" placeholder="Bundler url" />
-            </Grid>
-            */}
+            </Grid> */}
 
             <Grid xs={8} justify="flex-end" height="50px">
               <Text h4>Paymaster</Text>
@@ -85,22 +73,28 @@ const Setting = () => {
                 <Select.Option value="4">VerifyingPaymaster</Select.Option>
               </Select>
             </Grid>
+
+            <Grid xs={8} justify="flex-end" height="50px">
+              <Text h4>Bundler</Text>
+            </Grid>
+            <Grid xs={16} justify="flex-start" height="50px">
+              <Input width="100%" placeholder="account address" />
+            </Grid>
+
           
             <Grid xs={24} justify="center">
               <Link href="/home" className="w-full">
-                <Button shadow type="secondary-light" w="100%" onClick={onClickSave}> Save </Button>
+                <Button shadow type="secondary-light" w="100%"> Save </Button>
               </Link>
             </Grid>
-            
-            <Link href="/home" className="w-full">
-              <Grid xs={24} justify="center">
-                <Button shadow type="warning" w="100%" onClick={onClickFaucet}> ETH faucet </Button>
-              </Grid>
-            </Link>
+
+            <Grid xs={24} justify="center">
+              <Button shadow type="warning" w="100%" onClick={onClickFaucet}> ETH faucet </Button>
+            </Grid>
 
             <Grid xs={24} justify="center">
               <Link href="/" className="w-full">
-                <Button shadow type="error" w="100%" onClick={onClickExit}> Exit Account </Button>
+                <Button shadow type="error" w="100%"> Exit Account </Button>
               </Link>
             </Grid>
           </Grid.Container>

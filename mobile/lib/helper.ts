@@ -13,26 +13,20 @@ import { PaymasterMode } from "./type"
 import { getDefaultProvider, Signer } from "ethers"
 import { JsonRpcProvider } from '@ethersproject/providers'
 import {
-  formatEther,
-  formatUnits,
   parseEther,
   parseUnits,
 } from "ethers/lib/utils.js"
 import { provider, admin } from "./instance"
+import { balanceOf } from "./utils"
+import { Address } from "wagmi"
+import { WETH__factory, Token__factory } from "@accountjs/contracts"
 
 const {
-    providerUrl,
     bundlerUrl,
     entryPoint,
     accountFactory,
     accountForTokenFactory,
-    usdt,
-    weth,
-    tokenAddr,
-    wethPaymaster,
-    usdtPaymaster,
-    fixedPaymaster,
-    gaslessPaymaster,
+    weth, usdt, tokenAddr,
   } = LOCAL_CONFIG
 
 async function wrapProvider(provider: JsonRpcProvider, config: ClientConfig, owner: Signer) {
@@ -75,23 +69,58 @@ export async function getAAProvider(
     }
   }
 
-export async function testETHFaucet(account: string, amount = "1") {
+export async function testFaucet(account: Address, amount = "1") {
+  // const ethBalance = await balanceOf(account)
   await admin.sendTransaction({
     to: account,
     value: parseEther(amount)
+  }) // ETH
+
+  // WETH
+  await admin.sendTransaction({
+    to: weth,
+    value: parseEther(amount),
   })
+
+  await Token__factory.connect(weth, admin).transfer(
+    account, parseEther(amount))
+
+  // USDT
+  await Token__factory.connect(usdt, admin).transfer(
+    account, parseUnits(amount, 12))
+
+  // Token
+  // const token = Token__factory.connect(tokenAddr, admin)
+  // const requiredTok = parseEther("100")
+  // token.mint(requiredTok)
+  // token.transfer(account, requiredTok)
 }
 
-  // export async function depositAll(amount = "1") {
-  //   const WethPaymaster = WETHPaymaster__factory.connect(wethPaymaster, admin)
-  //   await WethPaymaster.deposit({ value: parseEther(amount) })
-  //   const UsdPaymaster = USDPaymaster__factory.connect(usdtPaymaster, admin)
-  //   await UsdPaymaster.deposit({ value: parseEther(amount) })
-  //   const TokenPaymaster = FixedPaymaster__factory.connect(fixedPaymaster, admin)
-  //   await TokenPaymaster.deposit({ value: parseEther(amount) })
-  //   const GaslessPaymaster = VerifyingPaymaster__factory.connect(
-  //     gaslessPaymaster,
-  //     admin,
-  //   )
-  //   await GaslessPaymaster.deposit({ value: parseEther(amount) })
-  // }
+export const getUserBalances = async (address: Address) => {
+  const etherBalance = await balanceOf(address)
+  const wethBalance = await balanceOf(address, weth)
+  const usdtBalance = await balanceOf(address, usdt)
+  const tokenBalance = await balanceOf(address, tokenAddr)
+
+  return {
+    ether: etherBalance,
+    weth: wethBalance,
+    usdt: usdtBalance,
+    token: tokenBalance,
+  }
+}
+
+
+// export async function depositAll(amount = "1") {
+//   const WethPaymaster = WETHPaymaster__factory.connect(wethPaymaster, admin)
+//   await WethPaymaster.deposit({ value: parseEther(amount) })
+//   const UsdPaymaster = USDPaymaster__factory.connect(usdtPaymaster, admin)
+//   await UsdPaymaster.deposit({ value: parseEther(amount) })
+//   const TokenPaymaster = FixedPaymaster__factory.connect(fixedPaymaster, admin)
+//   await TokenPaymaster.deposit({ value: parseEther(amount) })
+//   const GaslessPaymaster = VerifyingPaymaster__factory.connect(
+//     gaslessPaymaster,
+//     admin,
+//   )
+//   await GaslessPaymaster.deposit({ value: parseEther(amount) })
+// }

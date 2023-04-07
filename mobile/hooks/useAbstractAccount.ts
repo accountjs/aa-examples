@@ -1,17 +1,17 @@
-import { Wallet } from "ethers"
+import { Wallet, zeroAddress } from "ethers"
 import { Address } from "wagmi"
 import { unstable_batchedUpdates } from "react-dom"
 import { ERC4337EthersProvider } from "@account-abstraction/sdk"
 import { useLocalStorage } from "./useLocalStorage"
 import { useEffect, useState } from "react"
 import { usePaymaster } from "./usePaymaster"
-import { getAAProvider } from "@/lib/helper"
-import { log } from "console"
+import { getAAProvider, getUserBalances } from "@/lib/helper"
+import useEvent from "react-use-event-hook"
+import { Balances } from "@/lib/type"
 
 const randomWallet = () => Wallet.createRandom()
 
 const initialPrivateKey = randomWallet().privateKey
-const zeroAddress = "0x"
 
 export const useAbstractAccount = () => {
   const [privateKey, setPrivateKey] = useLocalStorage<string>(
@@ -33,7 +33,21 @@ export const useAbstractAccount = () => {
   const [accAddress, setAccAddress] = useState<Address>()
   const [hasDeployed, setHasDeployed] = useState(false)
   const [isActivating, setIsActivating] = useState(false)
-  
+  const [balances, setBalances] = useState<Balances>({})
+
+  const updateUserBalances = useEvent(async () => {
+    if (!accAddress  || accAddress === zeroAddress) {
+      return
+    }
+    
+    const balances = await getUserBalances(accAddress)
+    setBalances(balances)
+  })
+
+  const removePrvKey = () => {
+    setHasPrvKey(false)
+  }
+
   const generatePrvKey = () => {
     setPrivateKey(randomWallet().privateKey)
     setHasPrvKey(true)
@@ -53,6 +67,7 @@ export const useAbstractAccount = () => {
         gasLimit: 1e5,
       })
       await tx.wait()
+      await updateUserBalances()
       setHasDeployed(true)
     } catch (e) {
       // const error = parseExpectedGas(e as Error)
@@ -60,6 +75,12 @@ export const useAbstractAccount = () => {
     }
     setIsActivating(false)
   }
+
+  useEffect(() => {    
+    ;(async () => {
+      await updateUserBalances()
+    })()
+  }, [accAddress, updateUserBalances])
 
   // when privateKey 
   useEffect(() => {
@@ -90,9 +111,12 @@ export const useAbstractAccount = () => {
     hasDeployed,
     isActivating,
     aaProvider,
+    balances,
     // Methods
     setAccAddress,
+    removePrvKey,
     generatePrvKey,
     activateAccount,
+    updateUserBalances,
   }
 }
