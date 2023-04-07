@@ -17,12 +17,12 @@ const Guardian = () => {
 
         <Page.Content px={2}>
           <Grid.Container gap={2}>
-            <Grid xs={6} justify="flex-end" height="50px">
+            {/* <Grid xs={6} justify="flex-end" height="50px">
               <Text h4>Account</Text>
             </Grid>
             <Grid xs={18} justify="flex-start" height="50px">
               <Input width="100%" placeholder="account address" />
-            </Grid>
+            </Grid> */}
 
             <Grid xs={24} justify="center">
               <Link href="/new_owner" className="w-full">

@@ -20,7 +20,7 @@ type TransferProps = {
 
 const Transfer = () => {
   const {
-    accAddress,
+    accountAddress: accAddress,
   } = useAbstractAccount()
 
   const onClickFaucet = async () => {
@@ -81,7 +81,7 @@ const Transfer = () => {
               <Input width="100%" placeholder="account address" />
             </Grid>
 
-          
+
             <Grid xs={24} justify="center">
               <Link href="/home" className="w-full">
                 <Button shadow type="secondary-light" w="100%"> Save </Button>
@@ -98,7 +98,7 @@ const Transfer = () => {
               </Link>
             </Grid>
           </Grid.Container>
-          
+
         </Page.Content>
       </Page>
     </>

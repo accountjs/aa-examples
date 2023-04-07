@@ -6,15 +6,21 @@ import { Tabs, Tab } from "@mui/material"
 import PersonPinIcon from "@mui/icons-material/PersonPin"
 import HomeIcon from "@mui/icons-material/Home"
 import SwapVerticalCircleIcon from "@mui/icons-material/SwapVerticalCircle"
+import { useIsMounted } from "@/hooks/useIsMounted"
 
 type AppLink = "home" | "dapp" | "guardian"
 
 const AppLayout = ({ children }: PropsWithChildren) => {
   const router = useRouter()
-  const activateRoute = router.asPath?.replace(/\//g, "") ?? "home"
+  const activateRoute = router.asPath?.replace(/\//g, "") || "/"
 
   const handleChange = (_: React.SyntheticEvent, newValue: AppLink) => {
     router.push(`/${newValue}`)
+  }
+
+  const mounted = useIsMounted()
+  if (!mounted) {
+    return null
   }
 
   return (
@@ -27,7 +33,7 @@ const AppLayout = ({ children }: PropsWithChildren) => {
           variant="fullWidth"
           aria-label="icon tabs example"
         >
-          <Tab value="home" icon={<HomeIcon />} {...a11yProps(0)} />
+          <Tab value="/" icon={<HomeIcon />} {...a11yProps(0)} />
           <Tab
             value="dapp"
             icon={<SwapVerticalCircleIcon />}
