@@ -30,6 +30,12 @@ const Home = () => {
     activateAccount,
   } = useAbstractAccount()
 
+  const onClickActivate = async () => {
+    console.log("activate", accAddress)
+    if (hasDeployed) return
+    await activateAccount()
+  }
+
   useEffect (() => {
     if (!hasPrvKey) {
       generatePrvKey()
@@ -68,7 +74,7 @@ const Home = () => {
               <Text p>ETH</Text>
             </Grid>
             <Grid xs={24} justify="center" height="150px">
-              <Text h1>$123</Text>
+              <Text h1>{balances.ether?.formatted}</Text>
             </Grid>
             <Grid xs={24} justify="center" height="50px">
               <Text h5 pr={2}>
@@ -78,7 +84,7 @@ const Home = () => {
             </Grid>
             
             <Grid xs={24} justify="center" height="80px">
-              <Button shadow type="secondary-light" w="80%">
+              <Button shadow type="secondary-light" w="80%" onClick={onClickActivate}>
                 Activate Account
               </Button>
             </Grid>

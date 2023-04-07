@@ -13,6 +13,8 @@ export const AssetItem = ({
   currency,
   amount,
 }: AssetProps) => {
+
+
   return (
     <>
       <Grid.Container gap={2}>

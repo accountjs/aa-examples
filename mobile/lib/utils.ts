@@ -7,6 +7,13 @@ import {
 } from "@accountjs/contracts"
 import { ERC4337EthersProvider } from "@accountjs/sdk"
 
+const formatDecimals = (value: string, decimals = 2): string => {
+  // format without rounding
+  const [int, dec] = value.split(".")
+  const formatted = `${int}.${dec.slice(0, decimals)}`
+  return parseFloat(formatted).toFixed(decimals)
+}
+
 export async function balanceOf(
   of: Address,
   tokenAddress?: Address,
@@ -17,11 +24,14 @@ export async function balanceOf(
     const symbol = await token.symbol()
     const decimals = await token.decimals()
 
+    // const float = formatUnits(value, decimals)
+    // const formatted = parseFloat(float).toFixed(2)
+
     return {
       value,
       symbol,
       decimals,
-      formatted: formatUnits(value, decimals),
+      formatted: formatDecimals(formatUnits(value, decimals)),
     }
   }
 
@@ -30,7 +40,7 @@ export async function balanceOf(
     value,
     symbol: "eth",
     decimals: 18,
-    formatted: formatEther(value),
+    formatted: formatDecimals(formatEther(value)),
   }
 }
 
