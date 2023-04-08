@@ -1,20 +1,51 @@
-import { Currency } from "@/lib/type"
-import { Button, Collapse, Input, Spacer, Text } from "@geist-ui/core"
-import { useRef, useState } from "react"
+import { Button, Collapse, Input, Spacer, useToasts } from "@geist-ui/core"
+import { BigNumber } from "ethers"
+import { parseUnits } from "ethers/lib/utils.js"
+import { useState } from "react"
 
-type AssetProps = {
-  currency?: Currency
+export type AssetFormValue = {
+  toAddress?: string
   amount?: string
 }
 
-type FormValue = {
-  toAddress: string
-  amount: string
+type AssetProps = {
+  currency?: string
+  value?: BigNumber
+  decimals?: number
+  amount?: string
+  onTransfer: (x: AssetFormValue) => void
+  isTransfering?: boolean
 }
 
-export const AssetItem = ({ currency, amount }: AssetProps) => {
-  const [formValue, setFormValue] = useState<FormValue>()
-  const setChange = () => {}
+export const AssetItem = ({
+  currency,
+  value: bigBalance,
+  decimals,
+  amount,
+  onTransfer,
+  isTransfering,
+}: AssetProps) => {
+  const [formValue, setFormValue] = useState<AssetFormValue>()
+  const setChange = (key: keyof AssetFormValue, value: string) => {
+    setFormValue((x) => ({ ...x, [key]: value }))
+  }
+  const { setToast } = useToasts()
+  const handleTransfer = () => {
+    if (!formValue?.amount) {
+      return
+    }
+    const isGreaterCurrentBalance = parseUnits(formValue.amount, decimals).gt(
+      bigBalance ?? "0"
+    )
+    if (isGreaterCurrentBalance) {
+      setToast({
+        text: `Sending Amount is Greater Than the Current Balance!`,
+        type: "error",
+      })
+      return
+    }
+    onTransfer?.(formValue)
+  }
 
   return (
     <Collapse
@@ -31,20 +62,28 @@ export const AssetItem = ({ currency, amount }: AssetProps) => {
       <div className="flex flex-col gap-2">
         <Input
           placeholder="0x..."
-          onChange={(e) => console.log(e.target.value)}
+          onChange={(ev) => setChange("toAddress", ev.currentTarget.value)}
+          disabled={isTransfering}
         >
           To Address
         </Input>
         <Input
           placeholder="1"
           initialValue="1"
-          onChange={(e) => console.log(e.target.value)}
+          onChange={(ev) => setChange("amount", ev.currentTarget.value)}
+          disabled={isTransfering}
         >
           Amount
         </Input>
 
         <Spacer h={0.5} />
-        <Button width="30%" type="secondary" scale={3 / 4} onClick={setChange}>
+        <Button
+          width="30%"
+          type="secondary"
+          scale={3 / 4}
+          onClick={handleTransfer}
+          loading={isTransfering}
+        >
           Send
         </Button>
       </div>

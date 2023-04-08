@@ -1,4 +1,3 @@
-import { EntryPoint__factory } from "@account-abstraction/contracts"
 import {
   ClientConfig,
   ERC4337EthersProvider,
@@ -9,18 +8,15 @@ import {
 } from "@accountjs/sdk"
 
 import { LOCAL_CONFIG } from "@/config"
-import { Balances, PaymasterMode, zeroAddress } from "./type"
+import { Currency, PaymasterMode, zeroAddress } from "./type"
 import { Signer } from "ethers"
-import { JsonRpcProvider } from "@ethersproject/providers"
 import { parseEther, parseUnits } from "ethers/lib/utils.js"
+import { Address } from "wagmi"
+import { Token__factory, WETHPaymaster__factory } from "@accountjs/contracts"
+import { wrapPrivateGuardianProvider } from "@accountjs/sdk/dist/src/Provider"
+
 import { provider, admin } from "./instance"
 import { balanceOf } from "./utils"
-import { Address } from "wagmi"
-import { Token__factory, 
-  WETHPaymaster__factory, USDPaymaster__factory,
-  FixedPaymaster__factory, VerifyingPaymaster__factory  
-} from "@accountjs/contracts"
-import { wrapPrivateGuardianProvider } from "@accountjs/sdk/dist/src/Provider"
 
 const {
   bundlerUrl,
@@ -37,7 +33,7 @@ const {
 
 export async function getAAProvider(
   owner: Signer,
-  paymasterMode: PaymasterMode,
+  paymasterMode: PaymasterMode = PaymasterMode.none,
   walletAddress?: string
 ): Promise<ERC4337EthersProvider> {
   let config: ClientConfig
@@ -47,10 +43,16 @@ export async function getAAProvider(
         entryPointAddress: entryPoint,
         bundlerUrl: bundlerUrl,
         accountFactory: privateRecoveryFactory,
-        walletAddress
+        walletAddress,
       }
-      
-      return wrapPrivateGuardianProvider(provider, config, owner, zeroAddress, zeroAddress)
+
+      return wrapPrivateGuardianProvider(
+        provider,
+        config,
+        owner,
+        zeroAddress,
+        zeroAddress
+      )
     case PaymasterMode.weth:
       const WethPaymaster = new TokenPaymasterAPI(wethPaymaster)
       config = {
@@ -58,10 +60,16 @@ export async function getAAProvider(
         bundlerUrl: bundlerUrl,
         accountFactory: privateRecoveryFactory,
         paymasterAPI: WethPaymaster,
-        walletAddress
+        walletAddress,
       }
-      
-      return wrapPrivateGuardianProvider(provider, config, owner, weth, wethPaymaster)
+
+      return wrapPrivateGuardianProvider(
+        provider,
+        config,
+        owner,
+        weth,
+        wethPaymaster
+      )
     case PaymasterMode.usdt:
       const USDTPaymaster = new TokenPaymasterAPI(wethPaymaster)
       config = {
@@ -69,34 +77,52 @@ export async function getAAProvider(
         bundlerUrl: bundlerUrl,
         accountFactory: privateRecoveryFactory,
         paymasterAPI: USDTPaymaster,
-        walletAddress
+        walletAddress,
       }
-      
-      return wrapPrivateGuardianProvider(provider, config, owner, usdt, usdtPaymaster)
 
-      case PaymasterMode.token:
-        const FixedPaymaster = new TokenPaymasterAPI(fixedPaymaster)
-        config = {
-          entryPointAddress: entryPoint,
-          bundlerUrl: bundlerUrl,
-          accountFactory: privateRecoveryFactory,
-          paymasterAPI: FixedPaymaster,
-          walletAddress
-        }
-        
-        return wrapPrivateGuardianProvider(provider, config, owner, tokenAddr, fixedPaymaster)
+      return wrapPrivateGuardianProvider(
+        provider,
+        config,
+        owner,
+        usdt,
+        usdtPaymaster
+      )
 
-      case PaymasterMode.gasless:
-        const GaslessPaymaster = new VerifiedPaymasterAPI(gaslessPaymaster, admin)
-        config = {
-          entryPointAddress: entryPoint,
-          bundlerUrl: bundlerUrl,
-          accountFactory: privateRecoveryFactory,
-          paymasterAPI: GaslessPaymaster,
-          walletAddress
-        }
-        
-        return wrapPrivateGuardianProvider(provider, config, owner, zeroAddress, zeroAddress)
+    case PaymasterMode.token:
+      const FixedPaymaster = new TokenPaymasterAPI(fixedPaymaster)
+      config = {
+        entryPointAddress: entryPoint,
+        bundlerUrl: bundlerUrl,
+        accountFactory: privateRecoveryFactory,
+        paymasterAPI: FixedPaymaster,
+        walletAddress,
+      }
+
+      return wrapPrivateGuardianProvider(
+        provider,
+        config,
+        owner,
+        tokenAddr,
+        fixedPaymaster
+      )
+
+    case PaymasterMode.gasless:
+      const GaslessPaymaster = new VerifiedPaymasterAPI(gaslessPaymaster, admin)
+      config = {
+        entryPointAddress: entryPoint,
+        bundlerUrl: bundlerUrl,
+        accountFactory: privateRecoveryFactory,
+        paymasterAPI: GaslessPaymaster,
+        walletAddress,
+      }
+
+      return wrapPrivateGuardianProvider(
+        provider,
+        config,
+        owner,
+        zeroAddress,
+        zeroAddress
+      )
 
     default:
       throw new Error("Not implemented")
@@ -105,8 +131,8 @@ export async function getAAProvider(
 
 export async function testFaucet(account: Address, amount = "1") {
   // const ethBalance = await balanceOf(account)
-  
-  console.log("Admin address", admin.address);
+
+  console.log("Admin address", admin.address)
   await admin.sendTransaction({
     to: account,
     value: parseEther(amount),
@@ -119,7 +145,7 @@ export async function testFaucet(account: Address, amount = "1") {
   })
 
   const adminWETH = await balanceOf(admin.address as Address, weth)
-  console.log("WETH balance", adminWETH);
+  console.log("WETH balance", adminWETH)
   await Token__factory.connect(weth, admin).transfer(
     account,
     parseEther(amount)
@@ -127,7 +153,7 @@ export async function testFaucet(account: Address, amount = "1") {
 
   // USDT
   const adminUSDT = await balanceOf(admin.address as Address, usdt)
-  console.log("USDT balance", adminUSDT);
+  console.log("USDT balance", adminUSDT)
   await Token__factory.connect(usdt, admin).transfer(
     account,
     parseUnits(amount, 10)
@@ -138,7 +164,7 @@ export async function testFaucet(account: Address, amount = "1") {
   const requiredTok = parseEther("100")
   token.mint(requiredTok)
   const adminToken = await balanceOf(admin.address as Address, tokenAddr)
-  console.log("Token balance", adminToken);
+  console.log("Token balance", adminToken)
   token.transfer(account, requiredTok)
 }
 
@@ -147,7 +173,7 @@ export const getUserBalances = async (address: Address) => {
   const wethBalance = await balanceOf(address, weth)
   const usdtBalance = await balanceOf(address, usdt)
   const tokenBalance = await balanceOf(address, tokenAddr)
-  
+
   return {
     ether: etherBalance,
     weth: wethBalance,
@@ -159,15 +185,47 @@ export const getUserBalances = async (address: Address) => {
 export async function testDeposit(amount = "1") {
   const WethPaymaster = WETHPaymaster__factory.connect(wethPaymaster, admin)
   await WethPaymaster.deposit({ value: parseEther(amount) })
-  console.log("WETH Paymaster deposited", parseEther(amount));
-  
-  // const UsdPaymaster = USDPaymaster__factory.connect(usdtPaymaster, admin)
-  // await UsdPaymaster.deposit({ value: parseEther(amount) })
-  // const TokenPaymaster = FixedPaymaster__factory.connect(fixedPaymaster, admin)
-  // await TokenPaymaster.deposit({ value: parseEther(amount) })
-  // const GaslessPaymaster = VerifyingPaymaster__factory.connect(
-  //   gaslessPaymaster,
-  //   admin,
-  // )
-  // await GaslessPaymaster.deposit({ value: parseEther(amount) })
+  console.log("WETH Paymaster deposited", parseEther(amount))
+}
+
+const TOKEN_ADDRESS_MAP = {
+  [Currency.usdt]: usdt,
+  [Currency.weth]: weth,
+  [Currency.token]: tokenAddr,
+}
+
+export const transfer = async (
+  currency: Currency,
+  target: Address,
+  amount: string,
+  aaProvider: ERC4337EthersProvider
+) => {
+  switch (currency) {
+    case Currency.ether: {
+      await aaProvider.getSigner().sendTransaction({
+        to: target,
+        value: parseEther(amount),
+      })
+      break
+    }
+    case Currency.weth:
+    case Currency.usdt:
+    case Currency.token: {
+      const tokenAddress = TOKEN_ADDRESS_MAP[currency]
+      const tokenContract = Token__factory.connect(tokenAddress, aaProvider)
+      const decimals = await tokenContract.decimals()
+      const data = Token__factory.createInterface().encodeFunctionData(
+        "transfer",
+        [target, parseUnits(amount, decimals)]
+      )
+      await aaProvider.getSigner().sendTransaction({
+        data,
+        to: tokenAddress,
+      })
+      break
+    }
+    default: {
+      throw new Error("Unknown token")
+    }
+  }
 }

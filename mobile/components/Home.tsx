@@ -1,6 +1,6 @@
 import { useAbstractAccount } from "@/hooks/useAbstractAccount"
 import { useIsMounted } from "@/hooks/useIsMounted"
-import { Currency } from "@/lib/type"
+import { Balances, Currency, TokenSymbol } from "@/lib/type"
 import {
   Page,
   Grid,
@@ -14,13 +14,21 @@ import { Settings, Copy } from "@geist-ui/icons"
 import Link from "next/link"
 import cx from "clsx"
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard"
-import { AssetItem } from "./AssetItem"
+import { AssetFormValue, AssetItem } from "./AssetItem"
 import { useState } from "react"
-import { trimAddress } from "@/lib/utils"
+import { formatDecimals, transfer, trimAddress } from "@/lib/utils"
 
 const Home = () => {
-  const { hasDeployed, activateAccount, eoaAddress, balances, accountAddress } =
-    useAbstractAccount()
+  const {
+    hasDeployed,
+    activateAccount,
+    isActivating,
+    eoaAddress,
+    balances,
+    accountAddress,
+    aaProvider,
+    updateUserBalances,
+  } = useAbstractAccount()
 
   const onClickActivate = async () => {
     if (hasDeployed) return
@@ -39,6 +47,42 @@ const Home = () => {
     setActive(true)
     setTimeout(() => setActive(false), 2000)
   }
+
+  const [isTransfering, setIsTransfering] = useState(false)
+  const handleTransfer = async (
+    { amount, toAddress }: AssetFormValue,
+    symbol: TokenSymbol
+  ) => {
+    if (!aaProvider || !amount || !toAddress) {
+      return
+    }
+
+    const currency: Currency = {
+      ETH: Currency.ether,
+      TT: Currency.token,
+      USD: Currency.usdt,
+      WETH: Currency.weth,
+    }[symbol]
+
+    try {
+      setIsTransfering(true)
+      await transfer(toAddress, amount, aaProvider, currency)
+      await updateUserBalances()
+      setToast({
+        text: `Transfer ${amount} ${symbol} to ${toAddress} Successful`,
+        type: "success",
+      })
+    } catch (error) {
+      console.log("🚀 ~ file: Home.tsx:64 ~ Home ~ error:", error)
+      setToast({
+        text: "Error happened during transfer",
+        type: "error",
+      })
+    }
+    setIsTransfering(false)
+  }
+
+  const tokens = Object.values(balances)
 
   const mounted = useIsMounted()
   if (!mounted) {
@@ -72,7 +116,9 @@ const Home = () => {
             <Text p>ETH</Text>
           </Grid>
           <Grid xs={24} justify="center" height="150px">
-            <Text h1>{balances.ether?.formatted}</Text>
+            <Text h1>
+              {balances.ether ? formatDecimals(balances.ether.formatted) : "-"}
+            </Text>
           </Grid>
           <Grid xs={24} justify="center" height="50px">
             <Button
@@ -97,8 +143,8 @@ const Home = () => {
               <Button
                 shadow
                 type="secondary-light"
-                w="80%"
                 onClick={onClickActivate}
+                loading={isActivating}
               >
                 Activate Account
               </Button>
@@ -107,23 +153,18 @@ const Home = () => {
         </Grid.Container>
         <Text h3>ASSETS</Text>
         {/* TODO: Abstract it to asset list */}
-        <Collapse.Group>
-          <AssetItem
-            currency={Currency.ether}
-            amount={balances.ether?.formatted}
-          />
-          <AssetItem
-            currency={Currency.weth}
-            amount={balances.weth?.formatted}
-          />
-          <AssetItem
-            currency={Currency.usdt}
-            amount={balances.usdt?.formatted}
-          />
-          <AssetItem
-            currency={Currency.token}
-            amount={balances.token?.formatted}
-          />
+        <Collapse.Group accordion>
+          {tokens.map(({ formatted, symbol, decimals, value }) => (
+            <AssetItem
+              key={symbol}
+              currency={symbol}
+              value={value}
+              amount={formatted}
+              decimals={decimals}
+              onTransfer={(formValue) => handleTransfer(formValue, symbol)}
+              isTransfering={isTransfering}
+            />
+          ))}
         </Collapse.Group>
       </Page.Content>
     </Page>

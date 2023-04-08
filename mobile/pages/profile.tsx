@@ -22,7 +22,7 @@ const Profile = () => {
         <Page.Header pt={1} pl={2}>
           <Grid.Container gap={2}>
             <Grid xs={2} justify="flex-start" height="50px" pt={1}>
-              <Link href="/home">
+              <Link href="/">
                 <ArrowLeft />
               </Link>
             </Grid>
@@ -59,12 +59,12 @@ const Profile = () => {
           <Divider mt={2}/>
           <Grid.Container gap={2}>
             <Grid xs={24} justify="center">
-              <Link href="/home" className="w-full">
+              <Link href="/" className="w-full">
                 <Button shadow type="secondary-light" w="100%"> Save </Button>
               </Link>
             </Grid>
           </Grid.Container>
-          
+
         </Page.Content>
       </Page>
     </>

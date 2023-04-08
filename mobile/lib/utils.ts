@@ -5,12 +5,16 @@ import {
   parseUnits,
 } from "ethers/lib/utils.js"
 import { Address } from "wagmi"
-import { Balance, Currency } from "./type"
-import { provider, admin } from "./instance"
+import { Balance, Currency, TokenSymbol } from "./type"
+import { provider } from "./instance"
 import { Token__factory } from "@accountjs/contracts"
 import { ERC4337EthersProvider } from "@accountjs/sdk"
+import { LOCAL_CONFIG } from "@/config"
+import { TransactionResponse } from "@ethersproject/providers"
 
-const formatDecimals = (value: string, decimals = 2): string => {
+const { usdt, weth, tokenAddr } = LOCAL_CONFIG
+
+export const formatDecimals = (value: string, decimals = 2): string => {
   // format without rounding
   const [int, dec] = value.split(".")
   const formatted = `${int}.${dec.slice(0, decimals)}`
@@ -24,29 +28,30 @@ export const trimAddress = (address?: string | Address) => {
 }
 
 export async function balanceOf(
-  of: Address, tokenAddress?: Address
-): Promise<Balance | void> {
+  of: Address,
+  tokenAddress?: Address
+): Promise<Balance | undefined> {
   try {
     if (tokenAddress) {
       const token = await Token__factory.connect(tokenAddress, provider)
       const value = await token.balanceOf(of)
-      const symbol = await token.symbol()
+      const symbol = (await token.symbol()) as TokenSymbol
       const decimals = await token.decimals()
 
       return {
         value,
         symbol,
         decimals,
-        formatted: formatDecimals(formatUnits(value, decimals)),
+        formatted: formatUnits(value, decimals),
       }
     }
 
     const value = await provider.getBalance(of)
     return {
       value,
-      symbol: "eth",
+      symbol: 'ETH',
       decimals: 18,
-      formatted: formatDecimals(formatEther(value)),
+      formatted: formatEther(value),
     }
   } catch (error) {
     console.log("🚀 ~ file: utils.ts:44 ~ error:", error)
@@ -54,11 +59,18 @@ export async function balanceOf(
 }
 
 export const transfer = async (
-  target: Address,
+  target: string,
   amount: string,
   aaProvider: ERC4337EthersProvider,
-  tokenAddress?: Address
+  currency: Currency
 ) => {
+  const tokenAddress = {
+    ETH: null,
+    WETH: weth,
+    USDT: usdt,
+    MYTOK: tokenAddr,
+  }[currency]
+
   if (tokenAddress) {
     const token = await Token__factory.connect(tokenAddress, aaProvider)
     const decimals = await token.decimals()
@@ -66,16 +78,22 @@ export const transfer = async (
       "transfer",
       [target, parseUnits(amount, decimals)]
     )
-    await aaProvider.getSigner().sendTransaction({
+    const res = await aaProvider.getSigner().sendTransaction({
       data,
       to: tokenAddress,
+      gasLimit: 1e6,
     })
-  } else {
-    await aaProvider.getSigner().sendTransaction({
+    return res.wait()
+  }
+
+  return aaProvider
+    .getSigner()
+    .sendTransaction({
       to: target,
       value: parseEther(amount),
+      gasLimit: 1e6,
     })
-  }
+    .then((tx) => tx.wait())
 }
 
 export const parseExpectedGas = (e: Error): Error => {

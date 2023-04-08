@@ -6,7 +6,7 @@ export const LOCAL_CONFIG = {
   poseidonT3: '0x5FC8d32690cc91D4c39d9d3abcBD16989F875707',
   updateGuardianVerifier: '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512',
   socialRecoveryVerifier: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0',
-  
+
   wethPaymaster: '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853',
   usdtPaymaster: '0x8A791620dd6260079BF849Dc5567aDC3F2FdC318',
   fixedPaymaster: '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e',
@@ -17,6 +17,9 @@ export const LOCAL_CONFIG = {
   tokenAddr: '0x610178dA211FEF7D417bC0e6FeD39F05609AD788',
   bundlerUrl: 'http://localhost:3000/rpc',
   providerUrl: 'http://localhost:8545',
+  // recovery addresses
+  privateRecoveryAccountFactory: '0xc6e7DF5E7b4f2A278906862b61205850344D4e7d',
+  poseidon: '0x59b670e9fA9D0A427751Af201D676719a970857b',
 } as const
 
 // export const LOCAL_CONFIG = {
@@ -29,7 +32,7 @@ export const LOCAL_CONFIG = {
 //   poseidonT3: '0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1',
 //   updateGuardianVerifier: '0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0',
 //   socialRecoveryVerifier: '0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82',
-  
+
 //   wethPaymaster: '0x5FC8d32690cc91D4c39d9d3abcBD16989F875707',
 //   usdtPaymaster: '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853',
 //   fixedPaymaster: '0x8A791620dd6260079BF849Dc5567aDC3F2FdC318',

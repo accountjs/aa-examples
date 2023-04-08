@@ -74,7 +74,6 @@ export const useAbstractAccount = () => {
 
     ;(async () => {
       const ownerWallet = new Wallet(privateKey)
-      
       const newAAProvider = await getAAProvider(ownerWallet, paymasterMode!)
       const isPhantom = await newAAProvider.smartAccountAPI.checkAccountPhantom()
       const newAddress = await newAAProvider.getSenderAccountAddress()
