@@ -3,6 +3,7 @@ import Head from "next/head"
 import Link from "next/link"
 import AppLayout from "../components/AppLayout"
 import { useAbstractAccount } from "@/hooks/useAbstractAccount"
+import { trimAddress } from "@/lib/utils"
 
 const Guardian = () => {
   const { accountAddress } =
@@ -27,7 +28,7 @@ const Guardian = () => {
               <Text h5 >Account:</Text>
             </Grid>
             <Grid xs={16} justify="flex-start" height="50px">
-              <Text h5>0x1234...abcd</Text>
+              <Text h5>{trimAddress(accountAddress)}</Text>
             </Grid>
             <Grid xs={24} justify="center">
                 <Button

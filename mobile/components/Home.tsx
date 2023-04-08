@@ -17,12 +17,7 @@ import cx from "clsx"
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard"
 import { AssetItem } from "./AssetItem"
 import { useState } from "react"
-
-// trim address as 0x1234...5678
-const trimAddress = (address?: string | Address) => {
-  if (!address) return "0x"
-  return address.slice(0, 6) + "..." + address.slice(-4)
-}
+import { trimAddress } from "@/lib/utils"
 
 const Home = () => {
   const { hasDeployed, activateAccount, eoaAddress, balances, accountAddress } =

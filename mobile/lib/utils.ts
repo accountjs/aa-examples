@@ -17,6 +17,12 @@ const formatDecimals = (value: string, decimals = 2): string => {
   return parseFloat(formatted).toFixed(decimals)
 }
 
+// trim address as 0x1234...5678
+export const trimAddress = (address?: string | Address) => {
+  if (!address) return "0x"
+  return address.slice(0, 6) + "..." + address.slice(-4)
+}
+
 export async function balanceOf(
   of: Address,
   tokenAddress?: Address
