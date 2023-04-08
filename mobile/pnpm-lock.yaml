@@ -11,8 +11,8 @@ dependencies:
     specifier: ^0.1.2
     version: 0.1.2
   '@accountjs/sdk':
-    specifier: 0.1.12
-    version: 0.1.12
+    specifier: 0.1.14
+    version: 0.1.14
   '@accountjs/utils':
     specifier: ^0.1.1
     version: 0.1.1
@@ -165,8 +165,8 @@ packages:
     resolution: {integrity: sha512-Ax64yvgOAZJ8Hok/PJMqtPGsmLOVR6WngM/O7ILe1E4YVYrn3GrIh8k2TIGxJI3yj2NorspebKUsPcXg+duRMQ==}
     dev: false
 
-  /@accountjs/sdk@0.1.12:
-    resolution: {integrity: sha512-AD1DuH4pOdUFNmEMomN+eYQTUzKq8NvOXGjT5bmCVOjiDmQWjeUWekoXOs590i8T2dXU1sOBEOUQdrqLM0k2Lg==}
+  /@accountjs/sdk@0.1.14:
+    resolution: {integrity: sha512-C0iXOfD5g56liwnhCIEb7fNorpiY+bHNiSmuhnmSsk4m/MgeH9ns1TMnryrUDpEx/Gmui+LGPh61O6KyqfHT4w==}
     dependencies:
       '@account-abstraction/contracts': 0.5.0
       '@account-abstraction/utils': 0.5.0

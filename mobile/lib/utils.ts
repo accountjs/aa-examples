@@ -24,12 +24,11 @@ export const trimAddress = (address?: string | Address) => {
 }
 
 export async function balanceOf(
-  of: Address,
-  tokenAddress?: Address
+  of: Address, tokenAddress?: Address
 ): Promise<Balance | void> {
   try {
     if (tokenAddress) {
-    const token = await Token__factory.connect(tokenAddress, provider)
+      const token = await Token__factory.connect(tokenAddress, provider)
       const value = await token.balanceOf(of)
       const symbol = await token.symbol()
       const decimals = await token.decimals()

@@ -1,6 +1,5 @@
 import { useAbstractAccount } from "@/hooks/useAbstractAccount"
-import { usePaymaster } from "@/hooks/usePaymaster"
-import { testFaucet } from "@/lib/helper"
+import { testDeposit, testFaucet } from "@/lib/helper"
 import { PaymasterMode } from "@/lib/type"
 import { Button, Select, Grid, Input, Page, Text } from "@geist-ui/core"
 import { ArrowLeft } from "@geist-ui/icons"
@@ -9,12 +8,26 @@ import Link from "next/link"
 import { useRouter } from "next/router"
 
 const Setting = () => {
-  const { hasDeployed, accountAddress, removePrvKey } = useAbstractAccount()
-  const { paymasterAddress, setPaymasterMode } = usePaymaster()
+  const { hasDeployed, accountAddress, removePrvKey, paymasterAddress, paymasterMode, setPaymasterMode  } = useAbstractAccount()
   const router = useRouter()
 
-  const handlePmModeChange = (val: string) => {
-    switch (val) {
+  function initPmMode() : string {
+    switch (paymasterMode) {
+      case PaymasterMode.weth:
+        return "1"
+      case PaymasterMode.usdt:
+        return "2"
+      case PaymasterMode.token:
+        return "3"
+      case PaymasterMode.gasless:
+        return "4"
+      default:
+        return "0"
+    }
+  }
+
+  const handlePmModeChange = (val: any) => {
+    switch (val as string) {
       case "1":
         setPaymasterMode(PaymasterMode.weth)
         break
@@ -35,7 +48,7 @@ const Setting = () => {
   }
 
   const onClickDeposit = async () => {
-    await testFaucet(accountAddress)
+    await testDeposit()
   }
 
   const onClickFaucet = async () => {
@@ -99,7 +112,7 @@ const Setting = () => {
                   <Text h4>Paymaster</Text>
                 </Grid>
                 <Grid xs={16} justify="flex-start" height="50px">
-                  <Select placeholder="No Paymaster" type="default" width="100%" onChange={handlePmModeChange}>
+                  <Select initialValue={initPmMode()} type="default" width="100%" onChange={handlePmModeChange}>
                     <Select.Option value="0">NoPaymaster</Select.Option>
                     <Select.Option value="1">WETHPaymaster</Select.Option>
                     <Select.Option value="2">USDTPaymaster</Select.Option>
@@ -109,11 +122,15 @@ const Setting = () => {
                 </Grid>
 
                 <Grid xs={24} justify="center">
-                  <Link href="/" className="w-full">
                     <Button shadow type="warning" w="100%" onClick={onClickDeposit}>
                       PM deposit
                     </Button>
-                  </Link>
+                </Grid>
+                
+                <Grid xs={24} justify="center">
+                  <Button shadow type="warning" w="100%" onClick={onClickFaucet}>
+                    ETH faucet
+                  </Button>
                 </Grid>
               </>
               )}
@@ -133,13 +150,7 @@ const Setting = () => {
             </Grid>
 
           
-            <Grid xs={24} justify="center">
-              <Link href="/" className="w-full">
-                <Button shadow type="warning" w="100%" onClick={onClickFaucet}>
-                  ETH faucet
-                </Button>
-                </Link>
-              </Grid>
+            
 
             <Grid xs={24} justify="center">
               <Link href="/" className="w-full">

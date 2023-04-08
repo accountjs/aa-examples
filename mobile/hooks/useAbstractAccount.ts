@@ -5,13 +5,14 @@ import { ERC4337EthersProvider } from "@accountjs/sdk"
 import { useEffect, useState } from "react"
 import useEvent from "react-use-event-hook"
 import { getAAProvider, getUserBalances } from "@/lib/helper"
-import { Balances, zeroAddress } from "@/lib/type"
+import { Balances, PAYMASTER_TO_ADDRESS, PaymasterMode, zeroAddress } from "@/lib/type"
 import { useLocalStorage } from "./useLocalStorage"
 
 const randomWallet = () => Wallet.createRandom()
 
 export const useAbstractAccount = () => {
   const [privateKey, setPrivateKey] = useLocalStorage<string>("__PRIVATE_KEY__")
+  const [paymasterMode, setPaymasterMode] = useLocalStorage<PaymasterMode>("__PAYMASTER_MODE__", PaymasterMode.none)
   const [aaProvider, setAAProvider] = useState<ERC4337EthersProvider>()
   const [eoaAddress, setEoaAddress] = useState<Address>()
   const [accountAddress, setAccountAddress] = useState<Address>()
@@ -73,11 +74,9 @@ export const useAbstractAccount = () => {
 
     ;(async () => {
       const ownerWallet = new Wallet(privateKey)
-      console.log("ownerWallet", ownerWallet.address)
       
-      const newAAProvider = await getAAProvider(ownerWallet)
-      const isPhantom =
-        await newAAProvider.smartAccountAPI.checkAccountPhantom()
+      const newAAProvider = await getAAProvider(ownerWallet, paymasterMode!)
+      const isPhantom = await newAAProvider.smartAccountAPI.checkAccountPhantom()
       const newAddress = await newAAProvider.getSenderAccountAddress()
 
       unstable_batchedUpdates(() => {
@@ -87,7 +86,7 @@ export const useAbstractAccount = () => {
         setAccountAddress(newAddress as Address)
       })
     })()
-  }, [privateKey])
+  }, [privateKey, paymasterMode])
 
   return {
     hasPk: !!privateKey,
@@ -103,5 +102,9 @@ export const useAbstractAccount = () => {
     removePrvKey,
     activateAccount,
     updateUserBalances,
+
+    paymasterAddress: PAYMASTER_TO_ADDRESS[paymasterMode!],
+    paymasterMode,
+    setPaymasterMode,
   }
 }
