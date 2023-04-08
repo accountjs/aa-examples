@@ -2,8 +2,12 @@ import { Button, Grid, Page, Text } from "@geist-ui/core"
 import Head from "next/head"
 import Link from "next/link"
 import AppLayout from "../components/AppLayout"
+import { useAbstractAccount } from "@/hooks/useAbstractAccount"
 
 const Guardian = () => {
+  const { accountAddress } =
+    useAbstractAccount()
+
   const initGuaridans = () => {}
 
   return (
@@ -19,17 +23,21 @@ const Guardian = () => {
 
         <Page.Content px={2}>
           <Grid.Container gap={2}>
+            <Grid xs={8} justify="center" height="50px">
+              <Text h5 >Account:</Text>
+            </Grid>
+            <Grid xs={16} justify="flex-start" height="50px">
+              <Text h5>0x1234...abcd</Text>
+            </Grid>
             <Grid xs={24} justify="center">
-              <Link href="/new_owner" className="w-full">
                 <Button
                   shadow
                   type="secondary-light"
                   w="100%"
                   onClick={initGuaridans}
                 >
-                  Init your Guardians
+                  Init Guardians
                 </Button>
-              </Link>
             </Grid>
           </Grid.Container>
         </Page.Content>
