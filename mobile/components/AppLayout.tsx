@@ -24,7 +24,7 @@ const AppLayout = ({ children }: PropsWithChildren) => {
   }
 
   return (
-    <>
+    <div className="h-screen">
       <div className="max-h-[calc(100%-50px)]">{children}</div>
       <Page.Footer className="!fixed z-10 bg-white border-t bottom-0 left-0 right-0">
         <Tabs
@@ -42,7 +42,7 @@ const AppLayout = ({ children }: PropsWithChildren) => {
           <Tab value="guardian" icon={<PersonPinIcon />} {...a11yProps(2)} />
         </Tabs>
       </Page.Footer>
-    </>
+    </div>
   )
 }
 
