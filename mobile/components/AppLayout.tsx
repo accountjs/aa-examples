@@ -25,8 +25,8 @@ const AppLayout = ({ children }: PropsWithChildren) => {
 
   return (
     <>
-      {children}
-      <Page.Footer>
+      <div className="max-h-[calc(100%-50px)]">{children}</div>
+      <Page.Footer className="!fixed z-10 bg-white border-t bottom-0 left-0 right-0">
         <Tabs
           value={activateRoute}
           onChange={handleChange}
