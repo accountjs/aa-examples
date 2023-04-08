@@ -18,11 +18,14 @@ export const AssetItem = ({ currency, amount }: AssetProps) => {
 
   return (
     <Collapse
-      title={currency ?? "x"}
-      subtitle={
-        <Text h3 className="">
-          {amount ?? "-"}
-        </Text>
+      // A hack to change is layout
+      title={
+        (
+          <div className="flex items-center justify-between gap-4">
+            <h1 className="text-2xl text-blue-600">{currency ?? "x"}</h1>
+            <h3 className="text-2xl">{amount ?? "-"}</h3>
+          </div>
+        ) as unknown as string
       }
     >
       <div className="flex flex-col gap-2">
