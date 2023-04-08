@@ -85,26 +85,24 @@ const Setting = () => {
                   w="100%"
                   onClick={onClickSave}
                 >
-                  {" "}
-                  Save{" "}
+                  Save
                 </Button>
               </Link>
             </Grid>
 
-            <Link href="/home" className="w-full">
-              <Grid xs={24} justify="center">
+          
+            <Grid xs={24} justify="center">
+              <Link href="/" className="w-full">
                 <Button shadow type="warning" w="100%" onClick={onClickFaucet}>
-                  {" "}
-                  ETH faucet{" "}
+                  ETH faucet
                 </Button>
+                </Link>
               </Grid>
-            </Link>
 
             <Grid xs={24} justify="center">
               <Link href="/" className="w-full">
                 <Button shadow type="error" w="100%" onClick={onClickExit}>
-                  {" "}
-                  Exit Account{" "}
+                  Exit Account
                 </Button>
               </Link>
             </Grid>
