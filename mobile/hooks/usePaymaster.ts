@@ -1,23 +1,18 @@
-import { Address } from "wagmi"
-import { PaymasterMode } from "../lib/type"
+import { PAYMASTER_TO_ADDRESS, PaymasterMode } from "../lib/type"
 import { useEffect, useState } from "react"
 import { useLocalStorage } from "./useLocalStorage"
 
 
 export const usePaymaster = () => {
-  const [paymasterAddress, setPaymasterAddress] = useLocalStorage<Address>(
-    "__PAYMASTER_ADDRESS__",
-    "0x",
-  )
   const [paymasterMode, setPaymasterMode] = useLocalStorage<PaymasterMode>(
     "__PAYMASTER_MODE__",
     PaymasterMode.none,
   )
 
+
   return {
-    paymasterAddress,
+    paymasterAddress: PAYMASTER_TO_ADDRESS[paymasterMode!],
     paymasterMode,
-    setPaymasterAddress,
     setPaymasterMode,
   }
 }

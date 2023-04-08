@@ -73,6 +73,8 @@ export const useAbstractAccount = () => {
 
     ;(async () => {
       const ownerWallet = new Wallet(privateKey)
+      console.log("ownerWallet", ownerWallet.address)
+      
       const newAAProvider = await getAAProvider(ownerWallet)
       const isPhantom =
         await newAAProvider.smartAccountAPI.checkAccountPhantom()

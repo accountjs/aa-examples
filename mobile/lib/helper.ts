@@ -3,74 +3,101 @@ import {
   ClientConfig,
   ERC4337EthersProvider,
   HttpRpcClient,
-  SimpleAccountAPI,
+  PrivateRecoveryAccountAPI,
+  TokenPaymasterAPI,
+  VerifiedPaymasterAPI,
 } from "@accountjs/sdk"
 
 import { LOCAL_CONFIG } from "@/config"
-import { PaymasterMode } from "./type"
+import { Balances, PaymasterMode, zeroAddress } from "./type"
 import { Signer } from "ethers"
 import { JsonRpcProvider } from "@ethersproject/providers"
 import { parseEther, parseUnits } from "ethers/lib/utils.js"
 import { provider, admin } from "./instance"
 import { balanceOf } from "./utils"
 import { Address } from "wagmi"
-import { WETH__factory, Token__factory } from "@accountjs/contracts"
+import { WETH__factory, Token__factory, 
+  WETHPaymaster__factory, USDPaymaster__factory,
+  FixedPaymaster__factory, VerifyingPaymaster__factory  
+} from "@accountjs/contracts"
+import { wrapPrivateGuardianProvider } from "@accountjs/sdk/dist/src/Provider"
 
 const {
   bundlerUrl,
   entryPoint,
-  accountFactory,
-  accountForTokenFactory,
+  privateRecoveryFactory,
   weth,
   usdt,
   tokenAddr,
+  wethPaymaster,
+  usdtPaymaster,
+  fixedPaymaster,
+  gaslessPaymaster
 } = LOCAL_CONFIG
-
-async function wrapProvider(
-  provider: JsonRpcProvider,
-  config: ClientConfig,
-  owner: Signer
-) {
-  const chainId = await provider.getNetwork().then((net) => net.chainId)
-  const httpRpcClient = new HttpRpcClient(
-    config.bundlerUrl,
-    config.entryPointAddress,
-    chainId
-  )
-  const entryPointContract = EntryPoint__factory.connect(
-    config.entryPointAddress,
-    provider
-  )
-  const smartAccountAPI = new SimpleAccountAPI({
-    provider,
-    entryPointAddress: config.entryPointAddress,
-    owner,
-    factoryAddress: accountFactory,
-  })
-
-  return new ERC4337EthersProvider(
-    chainId,
-    config,
-    owner,
-    provider,
-    httpRpcClient,
-    entryPointContract,
-    smartAccountAPI
-  ).init()
-}
 
 export async function getAAProvider(
   owner: Signer,
   paymasterMode: PaymasterMode = PaymasterMode.none,
-  account?: string
+  walletAddress?: string
 ): Promise<ERC4337EthersProvider> {
+  let config: ClientConfig
   switch (paymasterMode) {
     case PaymasterMode.none:
-      const config = {
+      config = {
         entryPointAddress: entryPoint,
         bundlerUrl: bundlerUrl,
+        accountFactory: privateRecoveryFactory,
+        walletAddress
       }
-      return wrapProvider(provider, config, owner)
+      
+      return wrapPrivateGuardianProvider(provider, config, owner, zeroAddress, zeroAddress)
+    case PaymasterMode.weth:
+      const WethPaymaster = new TokenPaymasterAPI(wethPaymaster)
+      config = {
+        entryPointAddress: entryPoint,
+        bundlerUrl: bundlerUrl,
+        accountFactory: privateRecoveryFactory,
+        paymasterAPI: WethPaymaster,
+        walletAddress
+      }
+      
+      return wrapPrivateGuardianProvider(provider, config, owner, weth, wethPaymaster)
+    case PaymasterMode.usdt:
+      const USDTPaymaster = new TokenPaymasterAPI(wethPaymaster)
+      config = {
+        entryPointAddress: entryPoint,
+        bundlerUrl: bundlerUrl,
+        accountFactory: privateRecoveryFactory,
+        paymasterAPI: USDTPaymaster,
+        walletAddress
+      }
+      
+      return wrapPrivateGuardianProvider(provider, config, owner, usdt, usdtPaymaster)
+
+      case PaymasterMode.token:
+        const FixedPaymaster = new TokenPaymasterAPI(fixedPaymaster)
+        config = {
+          entryPointAddress: entryPoint,
+          bundlerUrl: bundlerUrl,
+          accountFactory: privateRecoveryFactory,
+          paymasterAPI: FixedPaymaster,
+          walletAddress
+        }
+        
+        return wrapPrivateGuardianProvider(provider, config, owner, tokenAddr, fixedPaymaster)
+
+      case PaymasterMode.gasless:
+        const GaslessPaymaster = new VerifiedPaymasterAPI(gaslessPaymaster, admin)
+        config = {
+          entryPointAddress: entryPoint,
+          bundlerUrl: bundlerUrl,
+          accountFactory: privateRecoveryFactory,
+          paymasterAPI: GaslessPaymaster,
+          walletAddress
+        }
+        
+        return wrapPrivateGuardianProvider(provider, config, owner, zeroAddress, zeroAddress)
+
     default:
       throw new Error("Not implemented")
   }
@@ -121,16 +148,16 @@ export const getUserBalances = async (address: Address) => {
   }
 }
 
-// export async function depositAll(amount = "1") {
-//   const WethPaymaster = WETHPaymaster__factory.connect(wethPaymaster, admin)
-//   await WethPaymaster.deposit({ value: parseEther(amount) })
-//   const UsdPaymaster = USDPaymaster__factory.connect(usdtPaymaster, admin)
-//   await UsdPaymaster.deposit({ value: parseEther(amount) })
-//   const TokenPaymaster = FixedPaymaster__factory.connect(fixedPaymaster, admin)
-//   await TokenPaymaster.deposit({ value: parseEther(amount) })
-//   const GaslessPaymaster = VerifyingPaymaster__factory.connect(
-//     gaslessPaymaster,
-//     admin,
-//   )
-//   await GaslessPaymaster.deposit({ value: parseEther(amount) })
-// }
+export async function depositAll(amount = "1") {
+  const WethPaymaster = WETHPaymaster__factory.connect(wethPaymaster, admin)
+  await WethPaymaster.deposit({ value: parseEther(amount) })
+  const UsdPaymaster = USDPaymaster__factory.connect(usdtPaymaster, admin)
+  await UsdPaymaster.deposit({ value: parseEther(amount) })
+  const TokenPaymaster = FixedPaymaster__factory.connect(fixedPaymaster, admin)
+  await TokenPaymaster.deposit({ value: parseEther(amount) })
+  const GaslessPaymaster = VerifyingPaymaster__factory.connect(
+    gaslessPaymaster,
+    admin,
+  )
+  await GaslessPaymaster.deposit({ value: parseEther(amount) })
+}

@@ -12,7 +12,6 @@ import {
 } from "@geist-ui/core"
 import { Settings, Copy } from "@geist-ui/icons"
 import Link from "next/link"
-import { Address } from "wagmi"
 import cx from "clsx"
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard"
 import { AssetItem } from "./AssetItem"
