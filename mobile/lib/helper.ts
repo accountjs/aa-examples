@@ -12,7 +12,7 @@ import { Currency, PaymasterMode, zeroAddress } from "./type"
 import { Signer } from "ethers"
 import { parseEther, parseUnits } from "ethers/lib/utils.js"
 import { Address } from "wagmi"
-import { Token__factory, WETHPaymaster__factory } from "@accountjs/contracts"
+import { FixedPaymaster__factory, GaslessPaymaster__factory, Token__factory, USDPaymaster__factory, WETHPaymaster__factory } from "@accountjs/contracts"
 import { wrapPrivateGuardianProvider } from "@accountjs/sdk/dist/src/Provider"
 
 import { provider, admin } from "./instance"
@@ -186,6 +186,15 @@ export async function testDeposit(amount = "1") {
   const WethPaymaster = WETHPaymaster__factory.connect(wethPaymaster, admin)
   await WethPaymaster.deposit({ value: parseEther(amount) })
   console.log("WETH Paymaster deposited", parseEther(amount))
+  const USDTPaymaster = USDPaymaster__factory.connect(usdtPaymaster, admin)
+  await USDTPaymaster.deposit({ value: parseEther(amount) })
+  console.log("USDT Paymaster deposited", parseEther(amount))
+  const FixedPaymaster = FixedPaymaster__factory.connect(fixedPaymaster, admin)
+  await FixedPaymaster.deposit({ value: parseEther(amount) })
+  console.log("Token Paymaster deposited", parseEther(amount))
+  const GaslessPaymaster = GaslessPaymaster__factory.connect(gaslessPaymaster, admin)
+  await GaslessPaymaster.deposit({ value: parseEther(amount) })
+  console.log("Gasless Paymaster deposited", parseEther(amount))
 }
 
 const TOKEN_ADDRESS_MAP = {
