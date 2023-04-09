@@ -10,7 +10,6 @@ import { provider } from "./instance"
 import { Token__factory } from "@accountjs/contracts"
 import { ERC4337EthersProvider } from "@accountjs/sdk"
 import { LOCAL_CONFIG } from "@/config"
-import { TransactionResponse } from "@ethersproject/providers"
 
 const { usdt, weth, tokenAddr } = LOCAL_CONFIG
 
@@ -109,4 +108,19 @@ export const parseExpectedGas = (e: Error): Error => {
     )
   }
   return e
+}
+
+export type RecursiveError = Error & {
+  error: RecursiveError
+  reason?: string
+}
+
+export const getErrorReason = (e: RecursiveError): string => {
+  let error = e, reason = e.reason ?? 'Unknown Error'
+
+  while (error.error) {
+    error = error.error
+    reason = error.reason ?? reason
+  }
+  return reason
 }

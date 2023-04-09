@@ -2,7 +2,6 @@ import { useEffect, useState } from "react"
 import {
   Button,
   Description,
-  Dot,
   Grid,
   Page,
   Text,
@@ -51,14 +50,18 @@ const Guardian = () => {
     }
 
     ;(async () => {
-      const accountContract = PrivateRecoveryAccount__factory.connect(
-        accountAddress,
-        aaProvider
-      )
-      const guardians = await accountContract
-        .getGuardians()
-        .then((xs) => xs.map((x) => x.toString()))
-      setGuardians(guardians)
+      try {
+        const accountContract = PrivateRecoveryAccount__factory.connect(
+          accountAddress,
+          aaProvider
+        )
+        const guardians = await accountContract
+          .getGuardians()
+          .then((xs) => xs.map((x) => x.toString()))
+        setGuardians(guardians)
+      } catch (error) {
+        console.log("🚀 ~ file: guardian.tsx:64 ~ ; ~ error:", error)
+      }
     })()
   }, [aaProvider, accountAddress, isInitializing])
 
@@ -159,19 +162,19 @@ const Guardian = () => {
               </Text>
             </Grid>
             {/* Show this only if no guardians, remove it after guardians has setup */}
-            {!guardians?.length && (
-              <Grid xs={24} justify="center">
-                <Button
-                  shadow
-                  type="secondary-light"
-                  w="100%"
-                  onClick={initializeGuardians}
-                  loading={isInitializing}
-                >
-                  Intialize Guardians
-                </Button>
-              </Grid>
-            )}
+            {/* {!guardians?.length && ( */}
+            <Grid xs={24} justify="center">
+              <Button
+                shadow
+                type="secondary-light"
+                w="100%"
+                onClick={initializeGuardians}
+                loading={isInitializing}
+              >
+                Intialize Guardians
+              </Button>
+            </Grid>
+            {/* )} */}
 
             {!!guardians?.length && (
               <>

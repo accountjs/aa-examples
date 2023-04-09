@@ -14,9 +14,7 @@ const Dapp = () => {
           <Text h2>DAPP</Text>
         </Page.Header>
 
-        <Page.Content px={2}>
-          Coming soon...
-        </Page.Content>
+        <Page.Content px={2}>Coming soon...</Page.Content>
       </Page>
     </AppLayout>
   )

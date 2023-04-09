@@ -15,7 +15,7 @@ export const useAbstractAccount = () => {
   const [paymasterMode, setPaymasterMode] = useLocalStorage<PaymasterMode>("__PAYMASTER_MODE__", PaymasterMode.none)
   const [aaProvider, setAAProvider] = useState<ERC4337EthersProvider>()
   const [eoaAddress, setEoaAddress] = useState<Address>()
-  const [accountAddress, setAccountAddress] = useState<Address>()
+  const [accountAddress, setAccountAddress] = useLocalStorage<Address>("__ACCOUNT_ADDRESS__")
   const [hasDeployed, setHasDeployed] = useState(false)
   const [isActivating, setIsActivating] = useState(false)
   const [balances, setBalances] = useState<Balances>({})
@@ -73,19 +73,23 @@ export const useAbstractAccount = () => {
     }
 
     ;(async () => {
-      const ownerWallet = new Wallet(privateKey)
-      const newAAProvider = await getAAProvider(ownerWallet, paymasterMode!)
-      const isPhantom = await newAAProvider.smartAccountAPI.checkAccountPhantom()
-      const newAddress = await newAAProvider.getSenderAccountAddress()
+      try {
+        const ownerWallet = new Wallet(privateKey)
+        const newAAProvider = await getAAProvider(ownerWallet, paymasterMode!, accountAddress)
+        const isPhantom = await newAAProvider.smartAccountAPI.checkAccountPhantom()
+        const newAddress = await newAAProvider.getSenderAccountAddress()
 
-      unstable_batchedUpdates(() => {
-        setEoaAddress(ownerWallet.address as Address)
-        setAAProvider(newAAProvider)
-        setHasDeployed(!isPhantom)
-        setAccountAddress(newAddress as Address)
-      })
+        unstable_batchedUpdates(() => {
+          setEoaAddress(ownerWallet.address as Address)
+          setAAProvider(newAAProvider)
+          setHasDeployed(!isPhantom)
+          setAccountAddress(newAddress as Address)
+        })
+      } catch (error) {
+        console.log("🚀 ~ file: useAbstractAccount.ts:89 ~ ; ~ error:", error)
+      }
     })()
-  }, [privateKey, paymasterMode])
+  }, [privateKey, paymasterMode, setAccountAddress, accountAddress])
 
   return {
     hasPk: !!privateKey,

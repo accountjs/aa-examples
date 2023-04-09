@@ -1,3 +1,4 @@
+import { formatDecimals } from "@/lib/utils"
 import { Button, Collapse, Input, Spacer, useToasts } from "@geist-ui/core"
 import { BigNumber } from "ethers"
 import { parseUnits } from "ethers/lib/utils.js"
@@ -12,7 +13,7 @@ type AssetProps = {
   currency?: string
   value?: BigNumber
   decimals?: number
-  amount?: string
+  formatted?: string
   onTransfer: (x: AssetFormValue) => void
   isTransfering?: boolean
 }
@@ -21,11 +22,13 @@ export const AssetItem = ({
   currency,
   value: bigBalance,
   decimals,
-  amount,
+  formatted,
   onTransfer,
   isTransfering,
 }: AssetProps) => {
-  const [formValue, setFormValue] = useState<AssetFormValue>()
+  const [formValue, setFormValue] = useState<AssetFormValue>({
+    amount: "1",
+  })
   const setChange = (key: keyof AssetFormValue, value: string) => {
     setFormValue((x) => ({ ...x, [key]: value }))
   }
@@ -54,7 +57,9 @@ export const AssetItem = ({
         (
           <div className="flex items-center justify-between gap-4">
             <h1 className="text-2xl text-blue-600">{currency ?? "x"}</h1>
-            <h3 className="text-2xl">{amount ?? "-"}</h3>
+            <h3 className="text-2xl">
+              {formatted ? formatDecimals(formatted, 4) : "-"}
+            </h3>
           </div>
         ) as unknown as string
       }
@@ -62,7 +67,7 @@ export const AssetItem = ({
       <div className="flex flex-col gap-2">
         <Input
           placeholder="0x..."
-          onChange={(ev) => setChange("toAddress", ev.currentTarget.value)}
+          onChange={(ev) => setChange("toAddress", ev.target.value)}
           disabled={isTransfering}
         >
           To Address
@@ -70,7 +75,7 @@ export const AssetItem = ({
         <Input
           placeholder="1"
           initialValue="1"
-          onChange={(ev) => setChange("amount", ev.currentTarget.value)}
+          onChange={(ev) => setChange("amount", ev.target.value)}
           disabled={isTransfering}
         >
           Amount

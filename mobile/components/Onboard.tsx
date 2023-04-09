@@ -40,7 +40,7 @@ const Onboard = () => {
       </Display>
       <Grid.Container justify="center" gap={2} mt="100px">
         <Grid xs={20} sm={20} justify="center">
-          <Link href="/recover" className="w-full">
+          <Link href="/recovery" className="w-full">
             <Button w="100%">Recover</Button>
           </Link>
         </Grid>

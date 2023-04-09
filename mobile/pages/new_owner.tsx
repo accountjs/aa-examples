@@ -1,11 +1,14 @@
 import { useRecoverAccount } from "@/hooks/useRecoverAccount"
+import { getErrorReason, RecursiveError } from "@/lib/utils"
 import {
   Button,
   Divider,
+  Dot,
   Grid,
   Input,
   Page,
   Text,
+  Tooltip,
   useToasts,
 } from "@geist-ui/core"
 import { ArrowLeft } from "@geist-ui/icons"
@@ -14,25 +17,26 @@ import Link from "next/link"
 import { useRouter } from "next/router"
 import { useState } from "react"
 import useEvent from "react-use-event-hook"
+// @ts-expect-error there is no typing for circomlibjs yet
+import { eddsa } from "circomlibjs"
+import cx from "clsx"
 import { RecoverData } from "./api/recover"
 
 const NewOwner = () => {
   const { query } = useRouter()
   const { address } = query as { address?: string }
-  console.log("🚀 ~ file: new_owner.tsx:22 ~ NewOwner ~ address:", address)
-  const { newOwner, oldOwner } = useRecoverAccount(address)
+  const { newOwner, oldOwner, guardians } = useRecoverAccount(address)
   const [recoverKey, setRecoverKey] = useState<string>()
   const [isRecovering, setIsRecovering] = useState(false)
+  const [recoveredGuardians, setRecoveredGuardians] = useState<string[]>([])
   const { setToast } = useToasts()
 
   const handleRecover = useEvent(async () => {
-    console.log(
-      "🚀 ~ file: new_owner.tsx:29 ~ handleRecover ~ recoverKey:",
-      recoverKey
-    )
     if (!oldOwner || !address || !newOwner || !recoverKey) {
       return
     }
+
+    const guard = eddsa.prv2pub(recoverKey)[0].toString()
 
     const data: RecoverData = {
       oldOwner,
@@ -49,19 +53,19 @@ const NewOwner = () => {
       })
       const json = await response.json()
       if (response.status !== 200) {
-        throw json.error.message
+        throw json.error
       }
+      setRecoveredGuardians((xs) => [...new Set([...xs, guard])])
       setToast({
-        text: `Vote recover with ${address} success`,
+        text: `${guard} vote recover with ${address} success`,
         type: "success",
       })
-    } catch (errorMsg) {
-      console.log(
-        "🚀 ~ file: new_owner.tsx:59 ~ handleRecover ~ errorMsg:",
-        errorMsg
-      )
-      if (typeof errorMsg === "string") {
-        setToast({ text: errorMsg as string, type: "error" })
+    } catch (e) {
+      const error = e as RecursiveError
+      console.log("🚀 ~ file: new_owner.tsx:63 ~ handleRecover ~ error:", error)
+      const reason = getErrorReason(error)
+      if (typeof reason === "string") {
+        setToast({ text: reason as string, type: "error" })
       }
     }
     setIsRecovering(false)
@@ -104,12 +108,51 @@ const NewOwner = () => {
             </Grid>
             <Grid xs={6} height="50px">
               <Text p b>
-                NewOwner:
+                New Owner:
               </Text>
             </Grid>
             <Grid xs={18} justify="flex-start" height="50px">
               <Text p>{newOwner}</Text>
             </Grid>
+
+            <Grid xs={6} mt={1}>
+              <Text h5>Your Guardians:</Text>
+            </Grid>
+            {!!guardians?.length && (
+              <Grid xs={18} mt={1}>
+                <div className="flex flex-col gap-2 w-full">
+                  {guardians.map((guard) => {
+                    const hasRecovered = recoveredGuardians.find(
+                      (x) => x === guard
+                    )
+
+                    return (
+                      <div className="flex gap-2" key={guard}>
+                        <Tooltip
+                          text={hasRecovered ? "Recoverd" : "Wait for Recover"}
+                          type={hasRecovered ? "success" : "default"}
+                        >
+                          <Dot
+                            margin={0}
+                            key={guard}
+                            type={hasRecovered ? "success" : "default"}
+                          />
+                        </Tooltip>
+
+                        <span
+                          className={cx(
+                            "w-full overflow-hidden whitespace-nowrap text-ellipsis text-gray-500",
+                            hasRecovered && "text-black"
+                          )}
+                        >
+                          {guard}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </Grid>
+            )}
           </Grid.Container>
           <Divider mt={4} mb={2} />
           <Grid.Container gap={2}>

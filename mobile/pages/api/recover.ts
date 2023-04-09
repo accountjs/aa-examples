@@ -74,7 +74,7 @@ export default async function handler(
     // Recover can be call from arbitrary eoa account
     const txResponse = await accountContract
       .connect(relayerAccount)
-      .recover(newOwner, proof.a, proof.b, proof.c, signal)
+      .recover(newOwner, proof.a, proof.b, proof.c, signal, { gasLimit: 1e6 })
       .then((tx) => tx.wait())
     res.status(200).json({
       data: txResponse,
@@ -84,8 +84,8 @@ export default async function handler(
     if (!(error as Error)?.message) {
       return
     }
-    res.status(404).json({
-      error: (error as Error).message
+    res.status(401).json({
+      error
     })
   }
 }

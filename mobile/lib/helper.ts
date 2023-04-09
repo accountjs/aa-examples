@@ -21,7 +21,7 @@ import { balanceOf } from "./utils"
 const {
   bundlerUrl,
   entryPoint,
-  privateRecoveryFactory,
+  privateRecoveryAccountFactory,
   weth,
   usdt,
   tokenAddr,
@@ -42,7 +42,7 @@ export async function getAAProvider(
       config = {
         entryPointAddress: entryPoint,
         bundlerUrl: bundlerUrl,
-        accountFactory: privateRecoveryFactory,
+        accountFactory: privateRecoveryAccountFactory,
         walletAddress,
       }
 
@@ -58,7 +58,7 @@ export async function getAAProvider(
       config = {
         entryPointAddress: entryPoint,
         bundlerUrl: bundlerUrl,
-        accountFactory: privateRecoveryFactory,
+        accountFactory: privateRecoveryAccountFactory,
         paymasterAPI: WethPaymaster,
         walletAddress,
       }
@@ -75,7 +75,7 @@ export async function getAAProvider(
       config = {
         entryPointAddress: entryPoint,
         bundlerUrl: bundlerUrl,
-        accountFactory: privateRecoveryFactory,
+        accountFactory: privateRecoveryAccountFactory,
         paymasterAPI: USDTPaymaster,
         walletAddress,
       }
@@ -93,7 +93,7 @@ export async function getAAProvider(
       config = {
         entryPointAddress: entryPoint,
         bundlerUrl: bundlerUrl,
-        accountFactory: privateRecoveryFactory,
+        accountFactory: privateRecoveryAccountFactory,
         paymasterAPI: FixedPaymaster,
         walletAddress,
       }
@@ -111,7 +111,7 @@ export async function getAAProvider(
       config = {
         entryPointAddress: entryPoint,
         bundlerUrl: bundlerUrl,
-        accountFactory: privateRecoveryFactory,
+        accountFactory: privateRecoveryAccountFactory,
         paymasterAPI: GaslessPaymaster,
         walletAddress,
       }

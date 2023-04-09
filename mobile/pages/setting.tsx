@@ -68,10 +68,6 @@ const Setting = () => {
     router.push("/")
   }
 
-  const onClickSave = async () => {
-    console.log("Save", accountAddress)
-  }
-
   return (
     <>
       <Head>
@@ -158,12 +154,7 @@ const Setting = () => {
 
             <Grid xs={24} justify="center">
               <Link href="/" className="w-full">
-                <Button
-                  shadow
-                  type="secondary-light"
-                  w="100%"
-                  onClick={onClickSave}
-                >
+                <Button shadow type="secondary-light" w="100%">
                   Save
                 </Button>
               </Link>

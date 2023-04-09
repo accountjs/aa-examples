@@ -1,6 +1,6 @@
 import { useAbstractAccount } from "@/hooks/useAbstractAccount"
 import { useIsMounted } from "@/hooks/useIsMounted"
-import { Balances, Currency, TokenSymbol } from "@/lib/type"
+import { Currency, TokenSymbol } from "@/lib/type"
 import {
   Page,
   Grid,
@@ -159,7 +159,7 @@ const Home = () => {
               key={symbol}
               currency={symbol}
               value={value}
-              amount={formatted}
+              formatted={formatted}
               decimals={decimals}
               onTransfer={(formValue) => handleTransfer(formValue, symbol)}
               isTransfering={isTransfering}

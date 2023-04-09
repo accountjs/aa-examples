@@ -10,10 +10,24 @@ import { useLocalStorage } from "./useLocalStorage"
 import { PrivateRecoveryAccount__factory } from "@accountjs/contracts"
 
 export const useRecoverAccount = (recoverAddress?: string) => {
-  const [privateKey, setPrivateKey] = useLocalStorage<string>("__PRIVATE_KEY__", () => randomWallet().privateKey)
+  const [privateKey] = useLocalStorage<string>(
+    "__PRIVATE_KEY__",
+    () => randomWallet().privateKey
+  )
+  const [accountAddress, setAccountAddress] = useLocalStorage<string>(
+    "__ACCOUNT_ADDRESS__",
+    recoverAddress
+  )
+  useEffect(() => {
+    if (accountAddress !== recoverAddress) {
+      setAccountAddress(recoverAddress)
+    }
+  }, [accountAddress, recoverAddress, setAccountAddress])
+
   const [aaProvider, setAAProvider] = useState<ERC4337EthersProvider>()
   const [oldOwner, setOldOwner] = useState<Address>()
   const [newOwner, setNewOwner] = useState<Address>()
+  const [guardians, setGuardians] = useState<string[]>()
 
   // when privateKey
   useEffect(() => {
@@ -24,13 +38,27 @@ export const useRecoverAccount = (recoverAddress?: string) => {
     ;(async () => {
       try {
         const ownerWallet = new Wallet(privateKey)
-        const newAAProvider = await getAAProvider(ownerWallet, PaymasterMode.none, recoverAddress)
-        const oldAccountOwner = await PrivateRecoveryAccount__factory.connect(recoverAddress, newAAProvider).owner()
+        const newAAProvider = await getAAProvider(
+          ownerWallet,
+          PaymasterMode.none,
+          recoverAddress
+        )
+        const oldAccountOwner = await PrivateRecoveryAccount__factory.connect(
+          recoverAddress,
+          newAAProvider
+        ).owner()
+        const guardians = await PrivateRecoveryAccount__factory.connect(
+          recoverAddress,
+          newAAProvider
+        )
+          .getGuardians()
+          .then((xs) => xs.map((x) => x.toString()))
 
         unstable_batchedUpdates(() => {
           setNewOwner(ownerWallet.address as Address)
           setAAProvider(newAAProvider)
           setOldOwner(oldAccountOwner as Address)
+          setGuardians(guardians)
         })
       } catch {
         // recover address don't exist
@@ -41,6 +69,7 @@ export const useRecoverAccount = (recoverAddress?: string) => {
   return {
     newOwner,
     oldOwner,
-    aaProvider
+    aaProvider,
+    guardians,
   }
 }
