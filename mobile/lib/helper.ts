@@ -71,7 +71,7 @@ export async function getAAProvider(
         wethPaymaster
       )
     case PaymasterMode.usdt:
-      const USDTPaymaster = new TokenPaymasterAPI(wethPaymaster)
+      const USDTPaymaster = new TokenPaymasterAPI(usdtPaymaster)
       config = {
         entryPointAddress: entryPoint,
         bundlerUrl: bundlerUrl,
