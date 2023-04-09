@@ -1,8 +1,11 @@
 import Head from "next/head"
 import Link from "next/link"
 import { Button, Grid, Input, Page, Text } from "@geist-ui/core"
+import { useState } from "react"
 
 const Recovery = () => {
+  const [address, setAddress] = useState<string>()
+
   return (
     <>
       <Head>
@@ -24,11 +27,15 @@ const Recovery = () => {
               <Text span>Account</Text>
             </Grid>
             <Grid xs={20} justify="flex-start">
-              <Input width="100%" placeholder="Account Address" />
+              <Input
+                width="100%"
+                placeholder="Account Address"
+                onChange={(ev) => setAddress(ev.target.value)}
+              />
             </Grid>
 
             <Grid xs={24} justify="center">
-              <Link href="/new_owner" className="w-full">
+              <Link href={`/new_owner?address=${address}`} className="w-full">
                 <Button shadow type="secondary-light" w="100%">
                   Start Recover
                 </Button>

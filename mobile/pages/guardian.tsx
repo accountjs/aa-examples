@@ -200,7 +200,7 @@ const Guardian = () => {
                 <div className="flex flex-col w-full gap-2">
                   <Description
                     title="Your Guardians Keys"
-                    content="Be sure to save this keys"
+                    content="Be sure to save this keys, it only appears this time"
                   />
                   <Textarea
                     width="100%"
