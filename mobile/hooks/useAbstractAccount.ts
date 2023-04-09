@@ -8,7 +8,7 @@ import { getAAProvider, getUserBalances } from "@/lib/helper"
 import { Balances, PAYMASTER_TO_ADDRESS, PaymasterMode, zeroAddress } from "@/lib/type"
 import { useLocalStorage } from "./useLocalStorage"
 
-const randomWallet = () => Wallet.createRandom()
+export const randomWallet = () => Wallet.createRandom()
 
 export const useAbstractAccount = () => {
   const [privateKey, setPrivateKey] = useLocalStorage<string>("__PRIVATE_KEY__")
