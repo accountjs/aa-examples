@@ -14,7 +14,7 @@ const Setting = () => {
     exitAccount,
     paymasterAddress,
     paymasterMode,
-    setPaymasterMode,
+    handleSetPaymaster,
   } = useAbstractAccount()
   const router = useRouter()
 
@@ -36,19 +36,19 @@ const Setting = () => {
   const handlePmModeChange = (val: any) => {
     switch (val as string) {
       case "1":
-        setPaymasterMode(PaymasterMode.weth)
+        handleSetPaymaster(PaymasterMode.weth)
         break
       case "2":
-        setPaymasterMode(PaymasterMode.usdt)
+        handleSetPaymaster(PaymasterMode.usdt)
         break
       case "3":
-        setPaymasterMode(PaymasterMode.token)
+        handleSetPaymaster(PaymasterMode.token)
         break
       case "4":
-        setPaymasterMode(PaymasterMode.gasless)
+        handleSetPaymaster(PaymasterMode.gasless)
         break
       default:
-        setPaymasterMode(PaymasterMode.none)
+        handleSetPaymaster(PaymasterMode.none)
         break
     }
     console.log(paymasterAddress)

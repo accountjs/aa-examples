@@ -92,6 +92,11 @@ export const useAbstractAccount = () => {
     })()
   }, [privateKey, paymasterMode, setAccountAddress, accountAddress])
 
+  const handleSetPaymaster = (mode: PaymasterMode) => {
+    setPaymasterMode(mode)
+    removeAccountAddress()
+  }
+
   return {
     hasPk: !!privateKey,
     eoaAddress,
@@ -109,6 +114,6 @@ export const useAbstractAccount = () => {
 
     paymasterAddress: PAYMASTER_TO_ADDRESS[paymasterMode!],
     paymasterMode,
-    setPaymasterMode,
+    handleSetPaymaster,
   }
 }
