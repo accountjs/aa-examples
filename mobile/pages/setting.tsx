@@ -11,7 +11,7 @@ const Setting = () => {
   const {
     hasDeployed,
     accountAddress,
-    removePrvKey,
+    exitAccount,
     paymasterAddress,
     paymasterMode,
     setPaymasterMode,
@@ -64,7 +64,7 @@ const Setting = () => {
   }
 
   const onClickExit = async () => {
-    removePrvKey()
+    exitAccount()
     router.push("/")
   }
 

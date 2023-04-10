@@ -15,7 +15,7 @@ export const useAbstractAccount = () => {
   const [paymasterMode, setPaymasterMode] = useLocalStorage<PaymasterMode>("__PAYMASTER_MODE__", PaymasterMode.none)
   const [aaProvider, setAAProvider] = useState<ERC4337EthersProvider>()
   const [eoaAddress, setEoaAddress] = useState<Address>()
-  const [accountAddress, setAccountAddress] = useLocalStorage<Address>("__ACCOUNT_ADDRESS__")
+  const [accountAddress, setAccountAddress, removeAccountAddress] = useLocalStorage<Address>("__ACCOUNT_ADDRESS__")
   const [hasDeployed, setHasDeployed] = useState(false)
   const [isActivating, setIsActivating] = useState(false)
   const [balances, setBalances] = useState<Balances>({})
@@ -33,8 +33,9 @@ export const useAbstractAccount = () => {
     setPrivateKey(randomWallet().privateKey)
   }
 
-  const removePrvKey = () => {
+  const exitAccount = () => {
     setPrivateKey(undefined)
+    removeAccountAddress()
   }
 
   // Activate account
@@ -102,7 +103,7 @@ export const useAbstractAccount = () => {
     // Methods
     setAccountAddress,
     generatePrvKey,
-    removePrvKey,
+    exitAccount,
     activateAccount,
     updateUserBalances,
 
