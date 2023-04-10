@@ -71,6 +71,8 @@ const NewOwner = () => {
     setIsRecovering(false)
   })
 
+  const hasMeetRecoverMeetThreshold = recoveredGuardians.length >= 2
+
   // Wait untail new eoa address generated and have a given recover address
   if (!address || !newOwner) {
     return null
@@ -182,7 +184,12 @@ const NewOwner = () => {
 
             <Grid xs={24} justify="center">
               <Link href="/" className="w-full">
-                <Button shadow type="secondary-light" w="100%">
+                <Button
+                  shadow
+                  type="secondary-light"
+                  w="100%"
+                  disabled={!hasMeetRecoverMeetThreshold}
+                >
                   Go Wallet
                 </Button>
               </Link>
