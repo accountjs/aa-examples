@@ -11,7 +11,7 @@ import { useLocalStorage } from "./useLocalStorage"
 export const randomWallet = () => Wallet.createRandom()
 
 export const useAbstractAccount = () => {
-  const [privateKey, setPrivateKey] = useLocalStorage<string>("__PRIVATE_KEY__")
+  const [privateKey, setPrivateKey, removePrivateKey] = useLocalStorage<string>("__PRIVATE_KEY__")
   const [paymasterMode, setPaymasterMode] = useLocalStorage<PaymasterMode>("__PAYMASTER_MODE__", PaymasterMode.none)
   const [aaProvider, setAAProvider] = useState<ERC4337EthersProvider>()
   const [eoaAddress, setEoaAddress] = useState<Address>()
@@ -34,7 +34,7 @@ export const useAbstractAccount = () => {
   }
 
   const exitAccount = () => {
-    setPrivateKey(undefined)
+    removePrivateKey()
     removeAccountAddress()
   }
 

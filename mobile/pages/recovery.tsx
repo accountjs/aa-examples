@@ -2,9 +2,17 @@ import Head from "next/head"
 import Link from "next/link"
 import { Button, Grid, Input, Page, Text } from "@geist-ui/core"
 import { useState } from "react"
+import { useLocalStorage } from "@/hooks/useLocalStorage"
+import { Router, useRouter } from "next/router"
 
 const Recovery = () => {
   const [address, setAddress] = useState<string>()
+  const [_, setAccountAddress] = useLocalStorage<string>("__ACCOUNT_ADDRESS__")
+  const router = useRouter()
+  const handleStartRecover = () => {
+    setAccountAddress(address)
+    router.push(`/new_owner?address=${address}`)
+  }
 
   return (
     <>
@@ -35,11 +43,14 @@ const Recovery = () => {
             </Grid>
 
             <Grid xs={24} justify="center">
-              <Link href={`/new_owner?address=${address}`} className="w-full">
-                <Button shadow type="secondary-light" w="100%">
-                  Start Recover
-                </Button>
-              </Link>
+              <Button
+                shadow
+                type="secondary-light"
+                w="100%"
+                onClick={handleStartRecover}
+              >
+                Start Recover
+              </Button>
             </Grid>
           </Grid.Container>
         </Page.Content>
