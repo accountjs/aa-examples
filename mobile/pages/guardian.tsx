@@ -162,19 +162,19 @@ const Guardian = () => {
               </Text>
             </Grid>
             {/* Show this only if no guardians, remove it after guardians has setup */}
-            {/* {!guardians?.length && ( */}
-            <Grid xs={24} justify="center">
-              <Button
-                shadow
-                type="secondary-light"
-                w="100%"
-                onClick={initializeGuardians}
-                loading={isInitializing}
-              >
-                Intialize Guardians
-              </Button>
-            </Grid>
-            {/* )} */}
+            {!guardians?.length && (
+              <Grid xs={24} justify="center">
+                <Button
+                  shadow
+                  type="secondary-light"
+                  w="100%"
+                  onClick={initializeGuardians}
+                  loading={isInitializing}
+                >
+                  Intialize Guardians
+                </Button>
+              </Grid>
+            )}
 
             {!!guardians?.length && (
               <>
