@@ -10,14 +10,16 @@ import { useLocalStorage } from "./useLocalStorage"
 import { PrivateRecoveryAccount__factory } from "@accountjs/contracts"
 
 export const useRecoverAccount = (recoverAddress?: string) => {
-  const [privateKey] = useLocalStorage<string>(
-    "__PRIVATE_KEY__",
-    () => randomWallet().privateKey
-  )
+  const [privateKey, setPrivateKey] = useLocalStorage<string>("__PRIVATE_KEY__")
   const [accountAddress, setAccountAddress] = useLocalStorage<string>(
     "__ACCOUNT_ADDRESS__",
     recoverAddress
   )
+
+  useEffect(() => {
+    setPrivateKey(randomWallet().privateKey)
+  }, [setPrivateKey])
+
   useEffect(() => {
     if (accountAddress !== recoverAddress) {
       setAccountAddress(recoverAddress)
